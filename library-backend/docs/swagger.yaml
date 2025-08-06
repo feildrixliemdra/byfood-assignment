@@ -1,0 +1,26 @@
+basePath: /
+host: http://localhost:3000
+info:
+  contact:
+    email: feildrixliemdra@gmail.com
+    name: Feildrix Liemdra
+  description: Library Management API
+  title: Library Management API
+  version: "1.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: Getting Hello in detail
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Getting Hello
+      tags:
+      - Hello
+swagger: "2.0"
