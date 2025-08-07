@@ -2,6 +2,7 @@ package router
 
 import (
 	"library-backend/internal/handler" // swagger handler
+	"library-backend/internal/payload"
 
 	_ "library-backend/docs"
 
@@ -11,7 +12,16 @@ import (
 )
 
 func NewRouter(hndler *handler.Handler) *fiber.App {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		// Global custom error handler
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			return c.Status(fiber.StatusBadRequest).JSON(payload.GlobalErrorHandlerResp{
+				Success: false,
+				Message: err.Error(),
+			})
+		},
+	})
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept",
@@ -20,6 +30,12 @@ func NewRouter(hndler *handler.Handler) *fiber.App {
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	app.Get("/", GetHello)
+
+	v1 := app.Group("/v1")
+
+	// book route
+	bookGroup := v1.Group("/books")
+	bookGroup.Post("/", hndler.BookHandler.CreateBook)
 
 	return app
 }

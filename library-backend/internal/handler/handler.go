@@ -5,7 +5,9 @@ import (
 	"library-backend/internal/service"
 )
 
-type Handler struct{}
+type Handler struct {
+	BookHandler BookHandler
+}
 
 type Option struct {
 	Config  *config.Config
@@ -13,5 +15,7 @@ type Option struct {
 }
 
 func InitiateHandler(opt Option) *Handler {
-	return &Handler{}
+	return &Handler{
+		BookHandler: NewBookHandler(opt.Service.BookService),
+	}
 }

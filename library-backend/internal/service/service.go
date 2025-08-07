@@ -5,7 +5,9 @@ import (
 	"library-backend/internal/repository"
 )
 
-type Service struct{}
+type Service struct {
+	BookService BookService
+}
 
 type Option struct {
 	Config     *config.Config
@@ -13,5 +15,7 @@ type Option struct {
 }
 
 func InitiateService(opt Option) *Service {
-	return &Service{}
+	return &Service{
+		BookService: NewBookService(opt.Repository.BookRepository),
+	}
 }
