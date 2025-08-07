@@ -24,6 +24,9 @@ func Start() {
 	}
 	defer db.Close()
 
+	// initialize validator
+	bootstrap.NewXValidator()
+
 	//==============================================
 	// initialize Dependencies Injections
 	//==============================================
