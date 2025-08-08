@@ -1,3 +1,6 @@
 .env
 tmp/
 library-backend
+
+coverage.out
+coverage.html
