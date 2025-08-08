@@ -2,6 +2,7 @@ package payload
 
 import (
 	"library-backend/internal/model"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -31,4 +32,34 @@ func (r *CreateBookRequest) ToModel() model.Book {
 
 type CreateBookResponse struct {
 	ID uuid.UUID `json:"id"`
+}
+
+type GetBooksRequest struct {
+	PaginationRequest
+}
+
+type GetBooksResponse struct {
+	Books      []BookResponse `json:"books"`
+	Pagination Pagination     `json:"pagination"`
+}
+
+type GetBookByIDRequest struct {
+	ID string `params:"id" validate:"required,uuid"`
+}
+
+type GetBookByIDResponse struct {
+	BookResponse
+}
+
+type BookResponse struct {
+	ID                uuid.UUID `json:"id"`
+	ISBN              string    `json:"isbn"`
+	Title             string    `json:"title"`
+	Author            string    `json:"author"`
+	Publisher         string    `json:"publisher"`
+	YearOfPublication int       `json:"year_of_publication"`
+	Category          string    `json:"category"`
+	ImageURL          string    `json:"image_url"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }

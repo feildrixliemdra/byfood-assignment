@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"library-backend/internal/model"
 
 	sq "github.com/Masterminds/squirrel"
@@ -10,6 +12,9 @@ import (
 
 type BookRepository interface {
 	CreateBook(ctx context.Context, book model.Book) error
+	GetBooks(ctx context.Context, limit, offset int) ([]model.Book, error)
+	GetBooksCount(ctx context.Context) (int, error)
+	GetBookByID(ctx context.Context, id string) (*model.Book, error)
 }
 
 type bookRepository struct {
@@ -22,7 +27,15 @@ func NewBookRepository(db *sqlx.DB) BookRepository {
 
 func (r *bookRepository) CreateBook(ctx context.Context, book model.Book) error {
 	q := sq.Insert("books").
-		Columns("id", "isbn", "title", "author", "publisher", "year_of_publication", "category", "image_url").
+		Columns("id",
+			"isbn",
+			"title",
+			"author",
+			"publisher",
+			"year_of_publication",
+			"category",
+			"image_url",
+		).
 		Values(book.ID, book.ISBN, book.Title, book.Author, book.Publisher, book.YearOfPublication, book.Category, book.ImageURL).
 		PlaceholderFormat(sq.Dollar)
 
@@ -34,4 +47,82 @@ func (r *bookRepository) CreateBook(ctx context.Context, book model.Book) error 
 	_, err = r.db.ExecContext(ctx, query, args...)
 
 	return err
+}
+
+func (r *bookRepository) GetBooks(ctx context.Context, limit, offset int) ([]model.Book, error) {
+	q := sq.Select("id",
+		"isbn",
+		"title",
+		"author",
+		"publisher",
+		"year_of_publication",
+		"category",
+		"image_url",
+		"created_at",
+		"updated_at",
+	).
+		From("books").
+		Where(sq.Eq{"deleted_at": nil}).
+		OrderBy("created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	var books []model.Book
+	err = r.db.SelectContext(ctx, &books, query, args...)
+
+	return books, err
+}
+
+func (r *bookRepository) GetBooksCount(ctx context.Context) (int, error) {
+	q := sq.Select("COUNT(id)").
+		From("books").
+		Where(sq.Eq{"deleted_at": nil}).
+		PlaceholderFormat(sq.Dollar)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return 0, err
+	}
+
+	var count int
+	err = r.db.GetContext(ctx, &count, query, args...)
+
+	return count, err
+}
+
+func (r *bookRepository) GetBookByID(ctx context.Context, id string) (*model.Book, error) {
+	var book model.Book
+
+	q := sq.Select("id",
+		"isbn",
+		"title",
+		"author",
+		"publisher",
+		"year_of_publication",
+		"category",
+		"image_url",
+		"created_at",
+		"updated_at",
+	).
+		From("books").
+		Where(sq.Eq{"id": id, "deleted_at": nil}).
+		PlaceholderFormat(sq.Dollar)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.db.GetContext(ctx, &book, query, args...)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+
+	return &book, err
 }

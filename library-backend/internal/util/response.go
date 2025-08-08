@@ -47,3 +47,10 @@ func ErrInternalResponse(c *fiber.Ctx) error {
 		},
 	)
 }
+
+func ErrNotFoundResponse(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusNotFound).JSON(payload.Response{
+		Success: false,
+		Message: "Not found",
+	})
+}

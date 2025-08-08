@@ -2,13 +2,17 @@ package service
 
 import (
 	"context"
+	"library-backend/errorcustom"
 	"library-backend/internal/payload"
 	"library-backend/internal/repository"
 	"log/slog"
+	"math"
 )
 
 type BookService interface {
 	CreateBook(ctx context.Context, request payload.CreateBookRequest) (payload.CreateBookResponse, error)
+	GetBooks(ctx context.Context, request payload.GetBooksRequest) (payload.GetBooksResponse, error)
+	GetBookByID(ctx context.Context, id string) (payload.GetBookByIDResponse, error)
 }
 
 type bookService struct {
@@ -29,6 +33,79 @@ func (s *bookService) CreateBook(ctx context.Context, request payload.CreateBook
 	}
 
 	res.ID = book.ID
+
+	return res, nil
+}
+
+func (s *bookService) GetBooks(ctx context.Context, request payload.GetBooksRequest) (res payload.GetBooksResponse, err error) {
+	offset := (request.Page - 1) * request.Limit
+
+	// get books with pagination
+	books, err := s.bookRepo.GetBooks(ctx, request.Limit, offset)
+	if err != nil {
+		slog.ErrorContext(ctx, "[BookService][GetBooks] failed to get books", "error", err)
+		return res, err
+	}
+
+	// get total count of books
+	totalCount, err := s.bookRepo.GetBooksCount(ctx)
+	if err != nil {
+		slog.ErrorContext(ctx, "[BookService][GetBooks] failed to get books count", "error", err)
+		return res, err
+	}
+
+	totalPages := int(math.Ceil(float64(totalCount) / float64(request.Limit)))
+
+	bookResponses := make([]payload.BookResponse, len(books))
+	for i, book := range books {
+		bookResponses[i] = payload.BookResponse{
+			ID:                book.ID,
+			ISBN:              book.ISBN,
+			Title:             book.Title,
+			Author:            book.Author,
+			Publisher:         book.Publisher,
+			YearOfPublication: book.YearOfPublication,
+			Category:          book.Category,
+			ImageURL:          book.ImageURL,
+			CreatedAt:         book.CreatedAt,
+			UpdatedAt:         book.UpdatedAt,
+		}
+	}
+
+	res.Books = bookResponses
+	res.Pagination = payload.Pagination{
+		Page:      request.Page,
+		Limit:     request.Limit,
+		TotalPage: totalPages,
+		TotalItem: totalCount,
+	}
+
+	return res, nil
+}
+
+func (s *bookService) GetBookByID(ctx context.Context, id string) (res payload.GetBookByIDResponse, err error) {
+	book, err := s.bookRepo.GetBookByID(ctx, id)
+	if err != nil {
+		slog.ErrorContext(ctx, "[BookService][GetBookByID] failed to get book by ID", "error", err, "id", id)
+		return res, err
+	}
+
+	if book == nil {
+		return res, errorcustom.ErrBookNotFound
+	}
+
+	res.BookResponse = payload.BookResponse{
+		ID:                book.ID,
+		ISBN:              book.ISBN,
+		Title:             book.Title,
+		Author:            book.Author,
+		Publisher:         book.Publisher,
+		YearOfPublication: book.YearOfPublication,
+		Category:          book.Category,
+		ImageURL:          book.ImageURL,
+		CreatedAt:         book.CreatedAt,
+		UpdatedAt:         book.UpdatedAt,
+	}
 
 	return res, nil
 }

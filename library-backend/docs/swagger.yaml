@@ -1,5 +1,127 @@
 basePath: /
-host: http://localhost:3000
+definitions:
+  payload.BookResponse:
+    properties:
+      author:
+        type: string
+      category:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      isbn:
+        type: string
+      publisher:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      year_of_publication:
+        type: integer
+    type: object
+  payload.CreateBookRequest:
+    properties:
+      author:
+        type: string
+      category:
+        type: string
+      image_url:
+        type: string
+      isbn:
+        type: string
+      publisher:
+        type: string
+      title:
+        type: string
+      year_of_publication:
+        type: integer
+    required:
+    - author
+    - category
+    - isbn
+    - publisher
+    - title
+    - year_of_publication
+    type: object
+  payload.CreateBookResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  payload.ErrorValidation:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  payload.GetBookByIDResponse:
+    properties:
+      author:
+        type: string
+      category:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      isbn:
+        type: string
+      publisher:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      year_of_publication:
+        type: integer
+    type: object
+  payload.GetBooksResponse:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/payload.BookResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/payload.Pagination'
+    type: object
+  payload.GlobalErrorHandlerResp:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  payload.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_item:
+        type: integer
+      total_page:
+        type: integer
+    type: object
+  payload.Response:
+    properties:
+      data: {}
+      error: {}
+      errors:
+        items:
+          $ref: '#/definitions/payload.ErrorValidation'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
 info:
   contact:
     email: feildrixliemdra@gmail.com
@@ -23,4 +145,113 @@ paths:
       summary: Getting Hello
       tags:
       - Hello
+  /v1/books:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of books with pagination support
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/payload.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/payload.GetBooksResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+      summary: Get Books with pagination
+      tags:
+      - Books
+    post:
+      consumes:
+      - application/json
+      description: Create a new book with the provided details
+      parameters:
+      - description: Book data
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/payload.CreateBookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/payload.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/payload.CreateBookResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+      summary: Create a new book
+      tags:
+      - Books
+  /v1/books/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific book by its ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/payload.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/payload.GetBookByIDResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+      summary: Get Book by ID
+      tags:
+      - Books
 swagger: "2.0"
