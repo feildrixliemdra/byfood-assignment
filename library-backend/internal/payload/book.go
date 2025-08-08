@@ -8,13 +8,13 @@ import (
 )
 
 type CreateBookRequest struct {
-	ISBN              string `json:"isbn" validate:"required"`
-	Title             string `json:"title" validate:"required"`
+	ISBN              string `json:"isbn" validate:"required,isbn"`
+	Title             string `json:"title" validate:"required,min=3,max=150"`
 	Author            string `json:"author" validate:"required"`
 	Publisher         string `json:"publisher" validate:"required"`
-	YearOfPublication int    `json:"year_of_publication" validate:"required"`
+	YearOfPublication int    `json:"year_of_publication" validate:"required,min=1800,max=2050"`
 	Category          string `json:"category" validate:"required"`
-	ImageURL          string `json:"image_url"`
+	ImageURL          string `json:"image_url,omitempty" validate:"omitempty,url"`
 }
 
 func (r *CreateBookRequest) ToModel() model.Book {
@@ -53,13 +53,13 @@ type GetBookByIDResponse struct {
 
 type UpdateBookRequest struct {
 	ID                string  `params:"id" validate:"required,uuid"`
-	ISBN              *string `json:"isbn,omitempty"`
-	Title             *string `json:"title,omitempty"`
+	ISBN              *string `json:"isbn,omitempty" validate:"omitempty,isbn"`
+	Title             *string `json:"title,omitempty" validate:"omitempty,min=3,max=150"`
 	Author            *string `json:"author,omitempty"`
 	Publisher         *string `json:"publisher,omitempty"`
 	YearOfPublication *int    `json:"year_of_publication,omitempty"`
 	Category          *string `json:"category,omitempty"`
-	ImageURL          *string `json:"image_url,omitempty"`
+	ImageURL          *string `json:"image_url,omitempty" validate:"omitempty,url"`
 }
 
 type BookResponse struct {
