@@ -122,6 +122,32 @@ definitions:
       success:
         type: boolean
     type: object
+  payload.UpdateBookRequest:
+    properties:
+      author:
+        type: string
+      category:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      isbn:
+        type: string
+      publisher:
+        type: string
+      title:
+        type: string
+      year_of_publication:
+        type: integer
+    required:
+    - id
+    type: object
+  payload.UpdateBookResponse:
+    properties:
+      message:
+        type: string
+    type: object
 info:
   contact:
     email: feildrixliemdra@gmail.com
@@ -252,6 +278,50 @@ paths:
           schema:
             $ref: '#/definitions/payload.GlobalErrorHandlerResp'
       summary: Get Book by ID
+      tags:
+      - Books
+    put:
+      consumes:
+      - application/json
+      description: Update a book's information by ID. Only provided fields will be
+        updated.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Book update data
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/payload.UpdateBookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/payload.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/payload.UpdateBookResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+      summary: Update a book
       tags:
       - Books
 swagger: "2.0"

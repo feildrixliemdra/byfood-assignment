@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"library-backend/internal/model"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -15,6 +16,7 @@ type BookRepository interface {
 	GetBooks(ctx context.Context, limit, offset int) ([]model.Book, error)
 	GetBooksCount(ctx context.Context) (int, error)
 	GetBookByID(ctx context.Context, id string) (*model.Book, error)
+	UpdateBook(ctx context.Context, id string, updates map[string]any) error
 }
 
 type bookRepository struct {
@@ -125,4 +127,41 @@ func (r *bookRepository) GetBookByID(ctx context.Context, id string) (*model.Boo
 	}
 
 	return &book, err
+}
+
+func (r *bookRepository) UpdateBook(ctx context.Context, id string, updates map[string]any) error {
+	if len(updates) == 0 {
+		return errors.New("no fields to update")
+	}
+
+	q := sq.Update("books").
+		Where(sq.Eq{"id": id, "deleted_at": nil}).
+		PlaceholderFormat(sq.Dollar)
+
+	for field, value := range updates {
+		q = q.Set(field, value)
+	}
+	
+	q = q.Set("updated_at", time.Now())
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+
+	result, err := r.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

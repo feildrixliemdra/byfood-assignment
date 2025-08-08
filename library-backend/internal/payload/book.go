@@ -51,6 +51,17 @@ type GetBookByIDResponse struct {
 	BookResponse
 }
 
+type UpdateBookRequest struct {
+	ID                string  `params:"id" validate:"required,uuid"`
+	ISBN              *string `json:"isbn,omitempty"`
+	Title             *string `json:"title,omitempty"`
+	Author            *string `json:"author,omitempty"`
+	Publisher         *string `json:"publisher,omitempty"`
+	YearOfPublication *int    `json:"year_of_publication,omitempty"`
+	Category          *string `json:"category,omitempty"`
+	ImageURL          *string `json:"image_url,omitempty"`
+}
+
 type BookResponse struct {
 	ID                uuid.UUID `json:"id"`
 	ISBN              string    `json:"isbn"`

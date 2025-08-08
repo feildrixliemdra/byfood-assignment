@@ -38,6 +38,7 @@ func NewRouter(hndler *handler.Handler) *fiber.App {
 	bookGroup.Get("/", hndler.BookHandler.GetBooks)
 	bookGroup.Get("/:id", hndler.BookHandler.GetBookByID)
 	bookGroup.Post("/", hndler.BookHandler.CreateBook)
+	bookGroup.Put("/:id", hndler.BookHandler.UpdateBook)
 
 	return app
 }

@@ -15,6 +15,7 @@ type BookHandler interface {
 	CreateBook(c *fiber.Ctx) error
 	GetBooks(c *fiber.Ctx) error
 	GetBookByID(c *fiber.Ctx) error
+	UpdateBook(c *fiber.Ctx) error
 }
 
 type bookHandler struct {
@@ -125,4 +126,43 @@ func (h *bookHandler) GetBookByID(c *fiber.Ctx) error {
 		return util.ErrInternalResponse(c)
 	}
 	return util.SuccessResponse(c, res)
+}
+
+// UpdateBook Updating Book
+//
+//	@Summary        Update a book
+//	@Description    Update a book's information by ID. Only provided fields will be updated.
+//	@Tags           Books
+//	@Accept         json
+//	@Produce        json
+//	@Param          id    path      string                     true   "Book ID"
+//	@Param          book  body      payload.UpdateBookRequest  true   "Book update data"
+//	@Success        200   {object}  payload.Response{data=payload.UpdateBookResponse}
+//	@Failure        400   {object}  payload.GlobalErrorHandlerResp
+//	@Failure        404   {object}  payload.GlobalErrorHandlerResp
+//	@Failure        500   {object}  payload.GlobalErrorHandlerResp
+//	@Router         /v1/books/{id} [put]
+func (h *bookHandler) UpdateBook(c *fiber.Ctx) error {
+	var request payload.UpdateBookRequest
+
+	id := c.Params("id")
+	request.ID = id
+
+	if err := c.BodyParser(&request); err != nil {
+		return util.ErrBindResponse(c, err)
+	}
+
+	if err := validator.Validate.Struct(request); err != nil {
+		return util.ErrBindResponse(c, err)
+	}
+
+	err := h.bookService.UpdateBook(c.Context(), request)
+	if err != nil {
+		if errors.Is(err, errorcustom.ErrBookNotFound) {
+			return util.ErrNotFoundResponse(c)
+		}
+		return util.ErrInternalResponse(c)
+	}
+
+	return util.SuccessResponse(c, nil)
 }
