@@ -74,3 +74,7 @@ type BookResponse struct {
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
+
+type DeleteBookRequest struct {
+	ID string `params:"id" validate:"required,uuid"`
+}

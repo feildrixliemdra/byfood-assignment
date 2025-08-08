@@ -17,6 +17,7 @@ type BookService interface {
 	GetBooks(ctx context.Context, request payload.GetBooksRequest) (payload.GetBooksResponse, error)
 	GetBookByID(ctx context.Context, id string) (payload.GetBookByIDResponse, error)
 	UpdateBook(ctx context.Context, request payload.UpdateBookRequest) error
+	DeleteBook(ctx context.Context, request payload.DeleteBookRequest) error
 }
 
 type bookService struct {
@@ -170,6 +171,28 @@ func (s *bookService) UpdateBook(ctx context.Context, request payload.UpdateBook
 	err = s.bookRepo.UpdateBook(ctx, request.ID, updates)
 	if err != nil {
 		slog.ErrorContext(ctx, "[BookService][UpdateBook] failed to update book", "error", err, "id", request.ID)
+		return err
+	}
+
+	return nil
+}
+
+func (s *bookService) DeleteBook(ctx context.Context, request payload.DeleteBookRequest) (err error) {
+	// Check if book exists first
+	book, err := s.bookRepo.GetBookByID(ctx, request.ID)
+	if err != nil {
+		slog.ErrorContext(ctx, "[BookService][DeleteBook] failed to check book existence", "error", err, "id", request.ID)
+		return err
+	}
+
+	if book == nil {
+		return errorcustom.ErrBookNotFound
+	}
+
+	// Soft delete the book
+	err = s.bookRepo.DeleteBook(ctx, request.ID)
+	if err != nil {
+		slog.ErrorContext(ctx, "[BookService][DeleteBook] failed to delete book", "error", err, "id", request.ID)
 		return err
 	}
 

@@ -16,6 +16,7 @@ type BookHandler interface {
 	GetBooks(c *fiber.Ctx) error
 	GetBookByID(c *fiber.Ctx) error
 	UpdateBook(c *fiber.Ctx) error
+	DeleteBook(c *fiber.Ctx) error
 }
 
 type bookHandler struct {
@@ -137,7 +138,7 @@ func (h *bookHandler) GetBookByID(c *fiber.Ctx) error {
 //	@Produce        json
 //	@Param          id    path      string                     true   "Book ID"
 //	@Param          book  body      payload.UpdateBookRequest  true   "Book update data"
-//	@Success        200   {object}  payload.Response{data=payload.UpdateBookResponse}
+//	@Success        200   {object}  payload.Response{}
 //	@Failure        400   {object}  payload.GlobalErrorHandlerResp
 //	@Failure        404   {object}  payload.GlobalErrorHandlerResp
 //	@Failure        500   {object}  payload.GlobalErrorHandlerResp
@@ -157,6 +158,40 @@ func (h *bookHandler) UpdateBook(c *fiber.Ctx) error {
 	}
 
 	err := h.bookService.UpdateBook(c.Context(), request)
+	if err != nil {
+		if errors.Is(err, errorcustom.ErrBookNotFound) {
+			return util.ErrNotFoundResponse(c)
+		}
+		return util.ErrInternalResponse(c)
+	}
+
+	return util.SuccessResponse(c, nil)
+}
+
+// DeleteBook Deleting Book
+//
+//	@Summary        Delete a book
+//	@Description    Soft delete a book by ID. Sets the deleted_at timestamp.
+//	@Tags           Books
+//	@Accept         json
+//	@Produce        json
+//	@Param          id   path      string  true  "Book ID"
+//	@Success        200  {object}  payload.Response{}
+//	@Failure        400  {object}  payload.GlobalErrorHandlerResp
+//	@Failure        404  {object}  payload.GlobalErrorHandlerResp
+//	@Failure        500  {object}  payload.GlobalErrorHandlerResp
+//	@Router         /v1/books/{id} [delete]
+func (h *bookHandler) DeleteBook(c *fiber.Ctx) error {
+	var request payload.DeleteBookRequest
+
+	id := c.Params("id")
+	request.ID = id
+
+	if err := validator.Validate.Struct(request); err != nil {
+		return util.ErrBindResponse(c, err)
+	}
+
+	err := h.bookService.DeleteBook(c.Context(), request)
 	if err != nil {
 		if errors.Is(err, errorcustom.ErrBookNotFound) {
 			return util.ErrNotFoundResponse(c)

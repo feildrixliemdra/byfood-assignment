@@ -17,6 +17,7 @@ type BookRepository interface {
 	GetBooksCount(ctx context.Context) (int, error)
 	GetBookByID(ctx context.Context, id string) (*model.Book, error)
 	UpdateBook(ctx context.Context, id string, updates map[string]any) error
+	DeleteBook(ctx context.Context, id string) error
 }
 
 type bookRepository struct {
@@ -143,6 +144,34 @@ func (r *bookRepository) UpdateBook(ctx context.Context, id string, updates map[
 	}
 	
 	q = q.Set("updated_at", time.Now())
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+
+	result, err := r.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
+func (r *bookRepository) DeleteBook(ctx context.Context, id string) error {
+	q := sq.Update("books").
+		Set("deleted_at", time.Now()).
+		Where(sq.Eq{"id": id, "deleted_at": nil}).
+		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := q.ToSql()
 	if err != nil {

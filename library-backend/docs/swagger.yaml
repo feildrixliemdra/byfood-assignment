@@ -36,8 +36,12 @@ definitions:
       publisher:
         type: string
       title:
+        maxLength: 150
+        minLength: 3
         type: string
       year_of_publication:
+        maximum: 2050
+        minimum: 1800
         type: integer
     required:
     - author
@@ -137,16 +141,13 @@ definitions:
       publisher:
         type: string
       title:
+        maxLength: 150
+        minLength: 3
         type: string
       year_of_publication:
         type: integer
     required:
     - id
-    type: object
-  payload.UpdateBookResponse:
-    properties:
-      message:
-        type: string
     type: object
 info:
   contact:
@@ -243,6 +244,38 @@ paths:
       tags:
       - Books
   /v1/books/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a book by ID. Sets the deleted_at timestamp.
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/payload.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/payload.GlobalErrorHandlerResp'
+      summary: Delete a book
+      tags:
+      - Books
     get:
       consumes:
       - application/json
@@ -303,12 +336,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/payload.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/payload.UpdateBookResponse'
-              type: object
+            $ref: '#/definitions/payload.Response'
         "400":
           description: Bad Request
           schema:

@@ -253,19 +253,55 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/payload.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/payload.UpdateBookResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/payload.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/payload.GlobalErrorHandlerResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/payload.GlobalErrorHandlerResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/payload.GlobalErrorHandlerResp"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Soft delete a book by ID. Sets the deleted_at timestamp.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Delete a book",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/payload.Response"
                         }
                     },
                     "400": {
@@ -353,10 +389,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 3
                 },
                 "year_of_publication": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 2050,
+                    "minimum": 1800
                 }
             }
         },
@@ -500,18 +540,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 3
                 },
                 "year_of_publication": {
                     "type": "integer"
-                }
-            }
-        },
-        "payload.UpdateBookResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
                 }
             }
         }
