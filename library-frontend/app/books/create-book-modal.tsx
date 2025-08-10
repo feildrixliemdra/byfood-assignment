@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, Loader2, Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -89,7 +89,7 @@ export function CreateBookModal({
   onSuccess,
 }: CreateBookModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageInputType, setImageInputType] = useState<"file" | "url">("file");
+  // Only support file upload for cover image in create modal
 
   const form = useForm<CreateBookFormData>({
     resolver: zodResolver(createBookSchema),
@@ -305,85 +305,34 @@ export function CreateBookModal({
             />
 
             {/* Image Upload Section */}
-            <div className="space-y-4">
-              <div>
-                <FormLabel>Cover Image</FormLabel>
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    type="button"
-                    variant={imageInputType === "file" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setImageInputType("file")}
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload File
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={imageInputType === "url" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setImageInputType("url")}
-                  >
-                    <Link className="mr-2 h-4 w-4" />
-                    URL
-                  </Button>
-                </div>
+            <div className="space-y-2">
+              <FormLabel>Cover Image</FormLabel>
+              <FormField
+                control={form.control}
+                name="image_file"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <FileUpload
+                        onFileChange={(file) => {
+                          field.onChange(file);
+                          if (file) {
+                            form.setValue("image_url", "");
+                          }
+                        }}
+                        acceptedTypes={["image/png", "image/jpeg", "image/jpg"]}
+                        maxSizeInMB={5}
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <Upload className="h-3.5 w-3.5" /> Choose a cover image
+                (PNG/JPG, up to 5MB)
               </div>
-
-              {imageInputType === "file" && (
-                <FormField
-                  control={form.control}
-                  name="image_file"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <FileUpload
-                          onFileChange={(file) => {
-                            field.onChange(file);
-                            if (file) {
-                              // Clear URL input when file is selected
-                              form.setValue("image_url", "");
-                            }
-                          }}
-                          acceptedTypes={[
-                            "image/png",
-                            "image/jpeg",
-                            "image/jpg",
-                          ]}
-                          maxSizeInMB={5}
-                          disabled={isSubmitting}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-500" />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              {imageInputType === "url" && (
-                <FormField
-                  control={form.control}
-                  name="image_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter image URL (optional)"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            // Clear file input when URL is entered
-                            if (e.target.value) {
-                              form.setValue("image_file", undefined);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-500" />
-                    </FormItem>
-                  )}
-                />
-              )}
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
