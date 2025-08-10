@@ -7,6 +7,7 @@ import {
 	updateBookAction,
 } from "@/app/books/actions";
 import type { ApiResponse } from "@/lib/http";
+import { showErrorToast } from "@/lib/error-handler";
 import type {
 	BookResponse,
 	CreateBookRequest,
@@ -24,8 +25,13 @@ export function useCreateBook() {
 			)) as ApiResponse<CreateBookResponse>;
 		},
 		onSuccess: async () => {
-			// Only invalidate active queries to reduce network calls
-			await qc.invalidateQueries({ queryKey: ["books"], refetchType: "active" });
+			await qc.invalidateQueries({
+				queryKey: ["books"],
+				refetchType: "active",
+			});
+		},
+		onError: (error) => {
+			showErrorToast(error, "create book");
 		},
 	});
 }
@@ -43,26 +49,46 @@ export function useUpdateBook() {
 			)) as ApiResponse<unknown>;
 		},
 		onSuccess: async (_res, variables) => {
-			// Update cached pages optimistically
+			// Optimistic update: move updated book to top (API orders by updated_at DESC)
 			qc.setQueriesData(
 				{ queryKey: ["books"] },
 				(old: ApiResponse<GetBooksResponse> | undefined) => {
 					if (!old?.data) return old;
-					const next: ApiResponse<GetBooksResponse> = {
+
+					// Find the book being updated
+					const updatedBookIndex = old.data.books.findIndex(
+						(b) => b.id === variables.id,
+					);
+					if (updatedBookIndex === -1) return old;
+
+					// Create updated book with new data and current timestamp
+					const updatedBook = {
+						...old.data.books[updatedBookIndex],
+						...variables.payload,
+						updated_at: new Date().toISOString(),
+					} as BookResponse;
+
+					// Remove book from current position and add to top (most recent)
+					const booksWithoutUpdated = old.data.books.filter(
+						(b) => b.id !== variables.id,
+					);
+
+					return {
 						...old,
 						data: {
 							...old.data,
-							books: old.data.books.map((b) =>
-								b.id === variables.id
-									? ({ ...b, ...variables.payload } as BookResponse)
-									: b,
-							),
+							books: [updatedBook, ...booksWithoutUpdated],
 						},
 					};
-					return next;
 				},
 			);
-			await qc.invalidateQueries({ queryKey: ["books"], refetchType: "active" });
+			await qc.invalidateQueries({
+				queryKey: ["books"],
+				refetchType: "active",
+			});
+		},
+		onError: (error) => {
+			showErrorToast(error, "update book");
 		},
 	});
 }
@@ -94,7 +120,13 @@ export function useDeleteBook() {
 					return next;
 				},
 			);
-			await qc.invalidateQueries({ queryKey: ["books"], refetchType: "active" });
+			await qc.invalidateQueries({
+				queryKey: ["books"],
+				refetchType: "active",
+			});
+		},
+		onError: (error) => {
+			showErrorToast(error, "delete book");
 		},
 	});
 }

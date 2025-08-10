@@ -123,7 +123,7 @@ export function CreateBookModal({
         updated_at: nowIso,
       };
 
-      // Success
+      // Success - error handling is now handled by the mutation
       toast.success("Book created successfully!", {
         description: `"${data.title}" has been added to the library.`,
       });
@@ -132,12 +132,7 @@ export function CreateBookModal({
       onOpenChange(false);
       onSuccess(createdBook);
     } catch (error) {
-      // Error
-      const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error("Failed to create book", {
-        description: errorMessage,
-      });
+      console.error("Local error in create book modal:", error);
     } finally {
       setIsSubmitting(false);
     }

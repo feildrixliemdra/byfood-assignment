@@ -8,23 +8,39 @@ import {
 } from "@/lib/repos/books";
 
 export async function createBookAction(input: CreateBookRequest) {
-	const res = await bookRepo.create(input);
-	// bookRepo.create already revalidates tag, but keep explicit for clarity
-	revalidateTag("books");
-	return res;
+	try {
+		const res = await bookRepo.create(input);
+		// bookRepo.create already revalidates tag, but keep explicit for clarity
+		revalidateTag("books");
+		return res;
+	} catch (error) {
+		// Re-throw the error so it can be handled by the mutation
+		// Re-throw to be handled by mutation
+		throw error;
+	}
 }
 
 export async function updateBookAction(
 	id: string,
 	input: Omit<UpdateBookRequest, "id">,
 ) {
-	const res = await bookRepo.update(id, input);
-	revalidateTag("books");
-	return res;
+	try {
+		const res = await bookRepo.update(id, input);
+		revalidateTag("books");
+		return res;
+	} catch (error) {
+		// Re-throw to be handled by mutation
+		throw error;
+	}
 }
 
 export async function deleteBookAction(id: string) {
-	const res = await bookRepo.remove(id);
-	revalidateTag("books");
-	return res;
+	try {
+		const res = await bookRepo.remove(id);
+		revalidateTag("books");
+		return res;
+	} catch (error) {
+		// Re-throw to be handled by mutation
+		throw error;
+	}
 }

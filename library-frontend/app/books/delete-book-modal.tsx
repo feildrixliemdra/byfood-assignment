@@ -71,7 +71,7 @@ export function DeleteBookModal({
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
             <div className="flex gap-3 min-w-0">
               <Image
-                src={book.image_url}
+                src={book.image_url ?? ""}
                 alt={book.title}
                 className="h-16 w-12 object-cover rounded flex-shrink-0"
                 width={48}

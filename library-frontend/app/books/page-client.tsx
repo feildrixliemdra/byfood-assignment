@@ -1,9 +1,9 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { AlertCircle, Plus, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { toast } from "sonner";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/pagination";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useBooksList, usePrefetchAdjacentBooks } from "@/lib/query/books";
 import type { Book } from "./columns";
 import { CreateBookModal } from "./create-book-modal";
@@ -59,11 +60,13 @@ function computePageItems(
 interface BooksPageClientProps {
   books: Book[];
   pagination: Pagination;
+  serverError?: string;
 }
 
 export default function BooksPageClient({
   books,
   pagination,
+  serverError,
 }: BooksPageClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -129,6 +132,16 @@ export default function BooksPageClient({
     }
   }, [debouncedSearchQuery, currentTitle, handleSearch]);
 
+  // Show server error as toast
+  useEffect(() => {
+    if (serverError) {
+      toast.error("Failed to load books", {
+        description:
+          "There was a server error while loading the books. Please try refreshing the page.",
+      });
+    }
+  }, [serverError]);
+
   return (
     <SidebarInset>
       <header className="flex h-16 shrink-0 items-center gap-2 px-4">
@@ -192,11 +205,26 @@ export default function BooksPageClient({
         </div>
 
         <div className="flex-1">
-          <DataTable
-            data={serverRows}
-            onUpdate={handleUpdateOptimistic}
-            onDelete={handleDeleteOptimistic}
-          />
+          {serverError ? (
+            <div className="flex items-center justify-center p-8 border rounded-md">
+              <div className="text-center">
+                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Server Error</h3>
+                <p className="text-muted-foreground mb-4">
+                  Failed to load books. Please try refreshing the page.
+                </p>
+                <Button onClick={() => window.location.reload()}>
+                  Refresh Page
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <DataTable
+              data={serverRows}
+              onUpdate={handleUpdateOptimistic}
+              onDelete={handleDeleteOptimistic}
+            />
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-end items-center">

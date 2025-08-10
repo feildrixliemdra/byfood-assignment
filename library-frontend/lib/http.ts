@@ -20,24 +20,22 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 		?.includes("application/json");
 	if (!response.ok) {
 		let errorMessage = `HTTP ${response.status} ${response.statusText}`;
+		let errorBody = null;
+		
 		try {
 			if (isJson) {
-				const body = (await response.json()) as unknown as { message?: string };
-				if (
-					body &&
-					typeof body === "object" &&
-					"message" in body &&
-					body.message
-				) {
-					errorMessage = body.message as string;
-				}
+				errorBody = (await response.json()) as unknown;
+				// Include the full error body for proper parsing
+				errorMessage = `HTTP ${response.status} ${response.statusText} ${JSON.stringify(errorBody)}`;
 			} else {
 				const text = await response.text();
-				if (text) errorMessage = text;
+				if (text) errorMessage = `HTTP ${response.status} ${response.statusText} ${text}`;
 			}
-		} catch {
+		} catch (parseError) {
+			console.warn('Failed to parse error response:', parseError);
 			// ignore parse errors and fall back to default message
 		}
+		
 		throw new Error(errorMessage);
 	}
 
