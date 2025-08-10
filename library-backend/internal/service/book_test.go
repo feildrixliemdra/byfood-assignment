@@ -106,7 +106,11 @@ func Test_bookService_GetBooks(t *testing.T) {
 		{
 			name: "success",
 			mockFunc: func() {
-				mockRepo.EXPECT().GetBooks(ctx, 10, 0).Return(sampleBooks, nil)
+				expectedReq := payload.GetBooksRequest{
+					PaginationRequest: payload.PaginationRequest{Page: 1, Limit: 10},
+					Offset: 0,
+				}
+				mockRepo.EXPECT().GetBooks(ctx, expectedReq).Return(sampleBooks, nil)
 				mockRepo.EXPECT().GetBooksCount(ctx).Return(1, nil)
 			},
 			request: payload.GetBooksRequest{
@@ -117,7 +121,11 @@ func Test_bookService_GetBooks(t *testing.T) {
 		{
 			name: "get books error",
 			mockFunc: func() {
-				mockRepo.EXPECT().GetBooks(ctx, 10, 0).Return(nil, errors.New("db error"))
+				expectedReq := payload.GetBooksRequest{
+					PaginationRequest: payload.PaginationRequest{Page: 1, Limit: 10},
+					Offset: 0,
+				}
+				mockRepo.EXPECT().GetBooks(ctx, expectedReq).Return(nil, errors.New("db error"))
 			},
 			request: payload.GetBooksRequest{
 				PaginationRequest: payload.PaginationRequest{Page: 1, Limit: 10},
@@ -127,7 +135,11 @@ func Test_bookService_GetBooks(t *testing.T) {
 		{
 			name: "get books count error",
 			mockFunc: func() {
-				mockRepo.EXPECT().GetBooks(ctx, 10, 0).Return(sampleBooks, nil)
+				expectedReq := payload.GetBooksRequest{
+					PaginationRequest: payload.PaginationRequest{Page: 1, Limit: 10},
+					Offset: 0,
+				}
+				mockRepo.EXPECT().GetBooks(ctx, expectedReq).Return(sampleBooks, nil)
 				mockRepo.EXPECT().GetBooksCount(ctx).Return(0, errors.New("db error"))
 			},
 			request: payload.GetBooksRequest{

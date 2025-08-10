@@ -7,6 +7,7 @@ package mock
 import (
 	context "context"
 	model "library-backend/internal/model"
+	payload "library-backend/internal/payload"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -79,18 +80,18 @@ func (mr *MockBookRepositoryMockRecorder) GetBookByID(ctx, id interface{}) *gomo
 }
 
 // GetBooks mocks base method.
-func (m *MockBookRepository) GetBooks(ctx context.Context, limit, offset int) ([]model.Book, error) {
+func (m *MockBookRepository) GetBooks(ctx context.Context, req payload.GetBooksRequest) ([]model.Book, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBooks", ctx, limit, offset)
+	ret := m.ctrl.Call(m, "GetBooks", ctx, req)
 	ret0, _ := ret[0].([]model.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBooks indicates an expected call of GetBooks.
-func (mr *MockBookRepositoryMockRecorder) GetBooks(ctx, limit, offset interface{}) *gomock.Call {
+func (mr *MockBookRepositoryMockRecorder) GetBooks(ctx, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBooks", reflect.TypeOf((*MockBookRepository)(nil).GetBooks), ctx, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBooks", reflect.TypeOf((*MockBookRepository)(nil).GetBooks), ctx, req)
 }
 
 // GetBooksCount mocks base method.
