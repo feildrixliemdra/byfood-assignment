@@ -18,21 +18,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BookDetailModal } from "./book-detail-modal";
+import { type Book, createColumns } from "./columns";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData> {
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export function DataTable<TData>({ data }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleViewDetail = (book: Book) => {
+    setSelectedBook(book);
+    setModalOpen(true);
+  };
+
+  const columns = createColumns({ onViewDetail: handleViewDetail });
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns as ColumnDef<TData>[],
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -85,6 +92,12 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
+
+      <BookDetailModal
+        book={selectedBook}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }

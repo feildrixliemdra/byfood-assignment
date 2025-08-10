@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "../../components/ui/badge";
 
 export type Book = {
   id: string;
@@ -26,7 +27,13 @@ export type Book = {
   updated_at: string;
 };
 
-export const columns: ColumnDef<Book>[] = [
+interface ColumnsProps {
+  onViewDetail: (book: Book) => void;
+}
+
+export const createColumns = ({
+  onViewDetail,
+}: ColumnsProps): ColumnDef<Book>[] => [
   {
     accessorKey: "image_url",
     header: "Cover",
@@ -65,9 +72,12 @@ export const columns: ColumnDef<Book>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => (
-      <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+      <Badge
+        variant="default"
+        className="inline-flex items-center  bg-primary/15 text-primary font-medium px-2 py-1 text-xs"
+      >
         {row.getValue("category")}
-      </span>
+      </Badge>
     ),
   },
   {
@@ -96,10 +106,7 @@ export const columns: ColumnDef<Book>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer hover:!bg-primary/15 hover:!text-primary"
-              onClick={() => {
-                // Handle view detail
-                console.log("View detail:", book.id);
-              }}
+              onClick={() => onViewDetail(book)}
             >
               <Eye className="mr-2 h-4 w-4" />
               View Detail

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/pagination";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { type Book, columns } from "./columns";
+import type { Book } from "./columns";
 import { DataTable } from "./data-table";
 
 // Mock data based on the API structure
@@ -213,7 +213,7 @@ export default function BooksPage() {
 
         {/* Content */}
         <div className="flex-1">
-          <DataTable columns={columns} data={mockBooks} />
+          <DataTable data={mockBooks} />
         </div>
 
         {/* Pagination */}
