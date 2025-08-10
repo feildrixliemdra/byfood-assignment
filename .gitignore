@@ -24,3 +24,45 @@ Thumbs.db
 
 # Logs
 *.log
+
+
+# dependencies
+library-frontend/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+library-frontend/.next/
+/out/
+
+# production
+/build
+
+# misc
+library-frontend/.DS_Store
+library-frontend/*.pem
+
+# debug
+library-frontend/npm-debug.log*
+library-frontend/yarn-debug.log*
+library-frontend/yarn-error.log*
+library-frontend/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
