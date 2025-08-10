@@ -1,5 +1,51 @@
+basePath: /
+definitions:
+  payload.CleanUpUrlRequest:
+    properties:
+      operation:
+        enum:
+        - redirection
+        - canonical
+        - all
+        type: string
+      url:
+        type: string
+    required:
+    - operation
+    - url
+    type: object
+  payload.CleanUpUrlResponse:
+    properties:
+      processed_url:
+        type: string
+    type: object
+  payload.ErrorValidation:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  payload.Response:
+    properties:
+      data: {}
+      error: {}
+      errors:
+        items:
+          $ref: '#/definitions/payload.ErrorValidation'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
 info:
-  contact: {}
+  contact:
+    email: feildrixliemdra@gmail.com
+    name: Feildrix Liemdra
+  description: URL Cleanup API
+  title: URL Cleanup API
+  version: "1.0"
 paths:
   /:
     get:
@@ -16,4 +62,44 @@ paths:
       summary: Getting Hello
       tags:
       - Hello
+  /v1/url-cleanup:
+    post:
+      consumes:
+      - application/json
+      description: Clean up URLs based on operation type (canonical, redirection,
+        or all)
+      parameters:
+      - description: URL cleanup request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/payload.CleanUpUrlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/payload.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/payload.CleanUpUrlResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/payload.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/payload.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/payload.Response'
+      summary: Process URL cleanup
+      tags:
+      - URL Cleanup
 swagger: "2.0"

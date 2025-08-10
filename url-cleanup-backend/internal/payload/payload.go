@@ -1,10 +1,10 @@
 package payload
 
 type CleanUpUrlRequest struct {
-	Url       string `json:"url"`
-	Operation string `json:"operation"`
+	Url       string `json:"url" validate:"required,url"`
+	Operation string `json:"operation" validate:"required,oneof=redirection canonical all"`
 }
 
 type CleanUpUrlResponse struct {
-	Url string `json:"url"`
+	ProcessedUrl string `json:"processed_url"`
 }
