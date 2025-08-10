@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"library-backend/internal/model"
+	"library-backend/internal/payload"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -13,7 +14,7 @@ import (
 
 type BookRepository interface {
 	CreateBook(ctx context.Context, book model.Book) error
-	GetBooks(ctx context.Context, limit, offset int) ([]model.Book, error)
+	GetBooks(ctx context.Context, req payload.GetBooksRequest) ([]model.Book, error)
 	GetBooksCount(ctx context.Context) (int, error)
 	GetBookByID(ctx context.Context, id string) (*model.Book, error)
 	UpdateBook(ctx context.Context, id string, updates map[string]any) error
@@ -52,7 +53,7 @@ func (r *bookRepository) CreateBook(ctx context.Context, book model.Book) error 
 	return err
 }
 
-func (r *bookRepository) GetBooks(ctx context.Context, limit, offset int) ([]model.Book, error) {
+func (r *bookRepository) GetBooks(ctx context.Context, req payload.GetBooksRequest) ([]model.Book, error) {
 	q := sq.Select("id",
 		"isbn",
 		"title",
@@ -63,12 +64,17 @@ func (r *bookRepository) GetBooks(ctx context.Context, limit, offset int) ([]mod
 		"image_url",
 		"created_at",
 		"updated_at",
-	).
-		From("books").
+	)
+
+	if req.Title != "" {
+		q = q.Where(sq.ILike{"title": "%" + req.Title + "%"})
+	}
+
+	q = q.From("books").
 		Where(sq.Eq{"deleted_at": nil}).
-		OrderBy("created_at DESC").
-		Limit(uint64(limit)).
-		Offset(uint64(offset)).
+		OrderBy("updated_at DESC").
+		Limit(uint64(req.Limit)).
+		Offset(uint64(req.Offset)).
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := q.ToSql()
@@ -142,7 +148,7 @@ func (r *bookRepository) UpdateBook(ctx context.Context, id string, updates map[
 	for field, value := range updates {
 		q = q.Set(field, value)
 	}
-	
+
 	q = q.Set("updated_at", time.Now())
 
 	query, args, err := q.ToSql()

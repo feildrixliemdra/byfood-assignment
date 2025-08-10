@@ -69,6 +69,12 @@ const docTemplate = `{
                         "description": "Items per page (default: 10)",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by title",
+                        "name": "title",
+                        "in": "query"
                     }
                 ],
                 "responses": {

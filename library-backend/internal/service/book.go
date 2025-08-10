@@ -43,10 +43,10 @@ func (s *bookService) CreateBook(ctx context.Context, request payload.CreateBook
 }
 
 func (s *bookService) GetBooks(ctx context.Context, request payload.GetBooksRequest) (res payload.GetBooksResponse, err error) {
-	offset := (request.Page - 1) * request.Limit
+	request.Offset = (request.Page - 1) * request.Limit
 
 	// get books with pagination
-	books, err := s.bookRepo.GetBooks(ctx, request.Limit, offset)
+	books, err := s.bookRepo.GetBooks(ctx, request)
 	if err != nil {
 		slog.ErrorContext(ctx, "[BookService][GetBooks] failed to get books", "error", err)
 		return res, err

@@ -188,6 +188,10 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: Search by title
+        in: query
+        name: title
+        type: string
       produces:
       - application/json
       responses:

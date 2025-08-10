@@ -36,6 +36,8 @@ type CreateBookResponse struct {
 
 type GetBooksRequest struct {
 	PaginationRequest
+	Offset int
+	Title  string `query:"title" validate:"omitempty"`
 }
 
 type GetBooksResponse struct {
