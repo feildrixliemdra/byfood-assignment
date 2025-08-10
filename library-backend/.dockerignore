@@ -1,0 +1,8 @@
+tmp/
+docs/
+*.md
+.git
+coverage.out
+coverage.html
+library-backend
+.DS_Store
