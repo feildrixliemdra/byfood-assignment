@@ -38,6 +38,7 @@ import { BOOK_CATEGORIES } from "@/lib/constants";
 import type { ApiResponse } from "@/lib/http";
 import { useCreateBook } from "@/lib/query/book-mutations";
 import type { CreateBookResponse } from "@/lib/repos/books.types";
+import { useImageKitUpload } from "@/hooks/use-imagekit-upload";
 import AsteriskLabel from "../../components/asterisk-label";
 import type { Book } from "./columns";
 
@@ -72,20 +73,27 @@ export function CreateBookModal({
   });
 
   const { mutateAsync: createBookAsync } = useCreateBook();
+  const { upload: uploadToImageKit, uploading: imageUploading, uploadProgress, error: uploadError } = useImageKitUpload();
 
   const onSubmit = async (data: CreateBookFormData) => {
     setIsSubmitting(true);
 
     try {
-      // Simulate file upload to get image URL
+      // Upload image to ImageKit if file is provided
       let finalImageUrl = data.image_url || "";
 
       if (data.image_file) {
-        // Mock file upload - in real app, upload to cloud storage
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        finalImageUrl = `https://example.com/uploads/${Date.now()}-${
-          data.image_file.name
-        }`;
+        try {
+          const uploadResult = await uploadToImageKit({
+            file: data.image_file,
+            fileName: `book-cover-${Date.now()}-${data.image_file.name}`,
+            folder: "/book-covers",
+            tags: ["book", "cover", data.category.toLowerCase()],
+          });
+          finalImageUrl = uploadResult.url;
+        } catch (uploadErr) {
+          throw new Error(`Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}`);
+        }
       }
 
       const finalData = {
@@ -302,16 +310,26 @@ export function CreateBookModal({
                         }}
                         acceptedTypes={["image/png", "image/jpeg", "image/jpg"]}
                         maxSizeInMB={5}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || imageUploading}
                       />
                     </FormControl>
                     <FormMessage className="text-red-500" />
+                    {uploadError && (
+                      <div className="text-sm text-red-500 mt-1">
+                        Upload Error: {uploadError}
+                      </div>
+                    )}
+                    {imageUploading && uploadProgress > 0 && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Uploading: {uploadProgress}%
+                      </div>
+                    )}
                   </FormItem>
                 )}
               />
               <div className="text-xs text-muted-foreground flex items-center gap-2">
                 <Upload className="h-3.5 w-3.5" /> Choose a cover image
-                (PNG/JPG, up to 5MB)
+                (PNG/JPG, up to 5MB) - Uploaded to ImageKit
               </div>
             </div>
 
@@ -327,13 +345,13 @@ export function CreateBookModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || imageUploading}
                 className="cursor-pointer"
               >
-                {isSubmitting && (
+                {(isSubmitting || imageUploading) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                {isSubmitting ? "Creating..." : "Create Book"}
+                {imageUploading ? "Uploading Image..." : isSubmitting ? "Creating..." : "Create Book"}
               </Button>
             </div>
           </form>

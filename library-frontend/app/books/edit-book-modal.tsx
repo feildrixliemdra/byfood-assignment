@@ -1,12 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { useImageKitUpload } from "@/hooks/use-imagekit-upload";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -145,7 +146,7 @@ export function EditBookModal({
   }, [book, form.reset]);
 
   const handleChooseImage = () => {
-    if (isSubmitting) return;
+    if (isSubmitting || imageUploading) return;
     fileInputRef.current?.click();
   };
 
@@ -176,21 +177,28 @@ export function EditBookModal({
   };
 
   const { mutateAsync: updateBookAsync } = useUpdateBook();
+  const { upload: uploadToImageKit, uploading: imageUploading, uploadProgress, error: uploadError } = useImageKitUpload();
 
   const onSubmit = async (data: EditBookFormData) => {
     if (!book) return;
     setIsSubmitting(true);
 
     try {
-      // Simulate file upload to get image URL
+      // Upload image to ImageKit if file is provided
       let finalImageUrl = data.image_url || book.image_url || "";
 
       if (data.image_file) {
-        // Mock file upload - in real app, upload to cloud storage
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        finalImageUrl = `https://example.com/uploads/${Date.now()}-${
-          data.image_file.name
-        }`;
+        try {
+          const uploadResult = await uploadToImageKit({
+            file: data.image_file,
+            fileName: `book-cover-${book.id}-${Date.now()}-${data.image_file.name}`,
+            folder: "/book-covers",
+            tags: ["book", "cover", data.category.toLowerCase(), "updated"],
+          });
+          finalImageUrl = uploadResult.url;
+        } catch (uploadErr) {
+          throw new Error(`Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}`);
+        }
       }
 
       const finalData = {
@@ -399,13 +407,14 @@ export function EditBookModal({
                   accept="image/png,image/jpeg,image/jpg"
                   className="hidden"
                   onChange={handleFileChange}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || imageUploading}
                 />
                 <button
                   type="button"
                   onClick={handleChooseImage}
-                  className="group relative w-40 h-56 rounded-md overflow-hidden border bg-muted cursor-pointer"
+                  className="group relative w-40 h-56 rounded-md overflow-hidden border bg-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="Change cover image"
+                  disabled={isSubmitting || imageUploading}
                 >
                   {previewUrl ? (
                     <Image
@@ -433,7 +442,7 @@ export function EditBookModal({
                       variant="outline"
                       size="sm"
                       onClick={handleResetImage}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || imageUploading}
                       aria-label="Reset cover image to original"
                     >
                       Reset to original
@@ -441,6 +450,20 @@ export function EditBookModal({
                   </div>
                 )}
               </div>
+              
+              {/* Upload Status */}
+              {uploadError && (
+                <div className="text-sm text-red-500 mt-1">
+                  Upload Error: {uploadError}
+                </div>
+              )}
+              {imageUploading && uploadProgress > 0 && (
+                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                  <Upload className="h-3.5 w-3.5" />
+                  Uploading to ImageKit: {uploadProgress}%
+                </div>
+              )}
+              
               <FormMessage className="text-red-500" />
             </div>
 
@@ -449,20 +472,20 @@ export function EditBookModal({
                 type="button"
                 variant="outline"
                 onClick={handleClose}
-                disabled={isSubmitting}
+                disabled={isSubmitting || imageUploading}
                 className="cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || imageUploading}
                 className="cursor-pointer"
               >
-                {isSubmitting && (
+                {(isSubmitting || imageUploading) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                {isSubmitting ? "Saving..." : "Save Changes"}
+                {imageUploading ? "Uploading Image..." : isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>
