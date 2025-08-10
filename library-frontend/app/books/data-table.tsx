@@ -21,6 +21,7 @@ import {
 import { BookDetailModal } from "./book-detail-modal";
 import { type Book, createColumns } from "./columns";
 import { DeleteBookModal } from "./delete-book-modal";
+import { EditBookModal } from "./edit-book-modal";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -36,6 +37,8 @@ export function DataTable<TData>({
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [bookToEdit, setBookToEdit] = useState<Book | null>(null);
 
   const handleViewDetail = (book: Book) => {
     setSelectedBook(book);
@@ -45,6 +48,11 @@ export function DataTable<TData>({
   const handleDelete = (book: Book) => {
     setBookToDelete(book);
     setDeleteModalOpen(true);
+  };
+
+  const handleEdit = (book: Book) => {
+    setBookToEdit(book);
+    setEditModalOpen(true);
   };
 
   const handleBookDeleted = () => {
@@ -57,6 +65,7 @@ export function DataTable<TData>({
   const columns = createColumns({
     onViewDetail: handleViewDetail,
     onDelete: handleDelete,
+    onEdit: handleEdit,
   });
 
   const table = useReactTable({
@@ -126,6 +135,13 @@ export function DataTable<TData>({
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
         onBookDeleted={handleBookDeleted}
+      />
+
+      <EditBookModal
+        book={bookToEdit}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onSuccess={onDataChange ?? (() => {})}
       />
     </div>
   );

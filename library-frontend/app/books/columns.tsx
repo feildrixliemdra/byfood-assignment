@@ -30,11 +30,13 @@ export type Book = {
 interface ColumnsProps {
   onViewDetail: (book: Book) => void;
   onDelete: (book: Book) => void;
+  onEdit: (book: Book) => void;
 }
 
 export const createColumns = ({
   onViewDetail,
   onDelete,
+  onEdit,
 }: ColumnsProps): ColumnDef<Book>[] => [
   {
     accessorKey: "image_url",
@@ -115,10 +117,7 @@ export const createColumns = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer hover:!bg-primary/15 hover:!text-primary"
-              onClick={() => {
-                // Handle edit
-                console.log("Edit:", book.id);
-              }}
+              onClick={() => onEdit(book)}
             >
               <Edit className="mr-2 h-4 w-4" />
               Edit
