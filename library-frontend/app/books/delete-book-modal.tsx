@@ -13,13 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { deleteBookAction } from "./actions";
 import type { Book } from "./columns";
 
 interface DeleteBookModalProps {
   book: Book | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onBookDeleted: () => void;
+  onBookDeleted: (id: string) => void;
 }
 
 export function DeleteBookModal({
@@ -36,19 +37,10 @@ export function DeleteBookModal({
     setIsDeleting(true);
 
     try {
-      // Mock API call - simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock success response
-      const success = Math.random() > 0.2; // 80% success rate for demo
-
-      if (success) {
-        toast.success(`"${book.title}" has been deleted successfully`);
-        onBookDeleted();
-        onOpenChange(false);
-      } else {
-        throw new Error("Failed to delete book");
-      }
+      await deleteBookAction(book.id);
+      toast.success(`"${book.title}" has been deleted successfully`);
+      onBookDeleted(book.id);
+      onOpenChange(false);
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("Failed to delete book. Please try again.");

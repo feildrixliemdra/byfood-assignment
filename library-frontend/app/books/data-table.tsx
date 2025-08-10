@@ -25,12 +25,14 @@ import { EditBookModal } from "./edit-book-modal";
 
 interface DataTableProps<TData> {
   data: TData[];
-  onDataChange?: () => void;
+  onUpdate?: (book: Book) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function DataTable<TData>({
   data,
-  onDataChange,
+  onUpdate,
+  onDelete,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -55,11 +57,8 @@ export function DataTable<TData>({
     setEditModalOpen(true);
   };
 
-  const handleBookDeleted = () => {
-    // Refresh the data if callback is provided
-    if (onDataChange) {
-      onDataChange();
-    }
+  const handleBookDeleted = (id: string) => {
+    if (onDelete) onDelete(id);
   };
 
   const columns = createColumns({
@@ -141,7 +140,7 @@ export function DataTable<TData>({
         book={bookToEdit}
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
-        onSuccess={onDataChange ?? (() => {})}
+        onSuccess={onUpdate ?? (() => {})}
       />
     </div>
   );

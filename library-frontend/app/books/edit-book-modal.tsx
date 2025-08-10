@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { BOOK_CATEGORIES } from "@/lib/constants";
 import AsteriskLabel from "../../components/asterisk-label";
+import { updateBookAction } from "./actions";
 import type { Book } from "./columns";
 
 function normalizeCategoryValue(category: string | undefined | null): string {
@@ -91,7 +92,7 @@ interface EditBookModalProps {
   book: Book | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (updated: Book) => void;
 }
 
 export function EditBookModal({
@@ -196,24 +197,38 @@ export function EditBookModal({
         image_file: undefined, // Remove file from final data
       };
 
-      // Mock API call with random success/failure
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // 90% success rate for demonstration
-          if (Math.random() > 0.1) {
-            resolve(finalData);
-          } else {
-            reject(new Error("Failed to update book. Please try again."));
-          }
-        }, 1000); // 1 second delay for API call after upload
+      await updateBookAction(book.id, {
+        title: finalData.title,
+        author: finalData.author,
+        publisher: finalData.publisher,
+        isbn: finalData.isbn,
+        year_of_publication: finalData.year_of_publication
+          ? parseInt(finalData.year_of_publication, 10)
+          : undefined,
+        category: finalData.category,
+        image_url: finalImageUrl || undefined,
       });
+
+      // Build updated book for optimistic UI
+      const updatedBook: Book = {
+        ...book,
+        title: finalData.title,
+        author: finalData.author,
+        publisher: finalData.publisher,
+        isbn: finalData.isbn,
+        year_of_publication: finalData.year_of_publication
+          ? parseInt(finalData.year_of_publication, 10)
+          : book.year_of_publication,
+        category: finalData.category,
+        image_url: finalImageUrl || book.image_url || "",
+      };
 
       toast.success("Book updated successfully!", {
         description: `"${data.title}" has been updated.`,
       });
 
       onOpenChange(false);
-      onSuccess();
+      onSuccess(updatedBook);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "An unexpected error occurred";

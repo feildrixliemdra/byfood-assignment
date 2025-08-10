@@ -32,7 +32,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BOOK_CATEGORIES } from "@/lib/constants";
+import type { ApiResponse } from "@/lib/http";
+import type { CreateBookResponse } from "@/lib/repos/books";
 import AsteriskLabel from "../../components/asterisk-label";
+import { createBookAction } from "./actions";
+import type { Book } from "./columns";
 
 const createBookSchema = z.object({
   title: z
@@ -80,7 +84,7 @@ type CreateBookFormData = z.infer<typeof createBookSchema>;
 interface CreateBookModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (created: Book) => void;
 }
 
 export function CreateBookModal({
@@ -126,17 +130,34 @@ export function CreateBookModal({
         image_file: undefined, // Remove file from final data
       };
 
-      // Mock API call with random success/failure
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // 90% success rate for demonstration
-          if (Math.random() > 0.1) {
-            resolve(finalData);
-          } else {
-            reject(new Error("Failed to create book. Please try again."));
-          }
-        }, 1000); // 1 second delay for API call after upload
-      });
+      const res = (await createBookAction({
+        title: finalData.title,
+        author: finalData.author,
+        publisher: finalData.publisher,
+        isbn: finalData.isbn,
+        year_of_publication: parseInt(finalData.year_of_publication, 10),
+        category: finalData.category,
+        image_url: finalImageUrl || undefined,
+      })) as ApiResponse<CreateBookResponse>;
+
+      const newId = res.data?.id;
+      if (!newId) {
+        throw new Error("Failed to create book (no id returned)");
+      }
+
+      const nowIso = new Date().toISOString();
+      const createdBook: Book = {
+        id: newId,
+        title: finalData.title,
+        author: finalData.author,
+        publisher: finalData.publisher,
+        isbn: finalData.isbn,
+        year_of_publication: parseInt(finalData.year_of_publication, 10),
+        category: finalData.category,
+        image_url: finalImageUrl || "",
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
 
       // Success
       toast.success("Book created successfully!", {
@@ -145,7 +166,7 @@ export function CreateBookModal({
 
       form.reset();
       onOpenChange(false);
-      onSuccess();
+      onSuccess(createdBook);
     } catch (error) {
       // Error
       const errorMessage =
