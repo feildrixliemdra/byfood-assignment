@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteBookAction } from "./actions";
+import { useDeleteBook } from "@/lib/query/book-mutations";
 import type { Book } from "./columns";
 
 interface DeleteBookModalProps {
@@ -31,13 +31,15 @@ export function DeleteBookModal({
 }: DeleteBookModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const { mutateAsync: deleteBookAsync } = useDeleteBook();
+
   const handleDelete = async () => {
     if (!book) return;
 
     setIsDeleting(true);
 
     try {
-      await deleteBookAction(book.id);
+      await deleteBookAsync(book.id);
       toast.success(`"${book.title}" has been deleted successfully`);
       onBookDeleted(book.id);
       onOpenChange(false);

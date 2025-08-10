@@ -2,13 +2,12 @@ import { bookRepo } from "@/lib/repos/books";
 import type { Book as BookRow } from "./columns";
 import BooksPageClient from "./page-client";
 
-export default async function BooksPage({
-  searchParams,
-}: {
-  searchParams?: { page?: string; limit?: string };
+export default async function BooksPage(props: {
+  searchParams: Promise<{ page?: string; limit?: string }>;
 }) {
-  const page = Number(searchParams?.page ?? 1);
-  const limit = Number(searchParams?.limit ?? 10);
+  const sp = await props.searchParams;
+  const page = Number(sp?.page ?? 1);
+  const limit = Number(sp?.limit ?? 10);
 
   const res = await bookRepo.list({ page, limit });
   const books = res.data?.books ?? [];

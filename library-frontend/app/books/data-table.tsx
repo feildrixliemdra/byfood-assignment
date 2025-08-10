@@ -8,7 +8,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   Table,
@@ -42,30 +42,32 @@ export function DataTable<TData>({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [bookToEdit, setBookToEdit] = useState<Book | null>(null);
 
-  const handleViewDetail = (book: Book) => {
+  const handleViewDetail = useCallback((book: Book) => {
     setSelectedBook(book);
     setModalOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (book: Book) => {
+  const handleDelete = useCallback((book: Book) => {
     setBookToDelete(book);
     setDeleteModalOpen(true);
-  };
+  }, []);
 
-  const handleEdit = (book: Book) => {
+  const handleEdit = useCallback((book: Book) => {
     setBookToEdit(book);
     setEditModalOpen(true);
-  };
+  }, []);
 
   const handleBookDeleted = (id: string) => {
     if (onDelete) onDelete(id);
   };
 
-  const columns = createColumns({
-    onViewDetail: handleViewDetail,
-    onDelete: handleDelete,
-    onEdit: handleEdit,
-  });
+  const columns = useMemo(() => {
+    return createColumns({
+      onViewDetail: handleViewDetail,
+      onDelete: handleDelete,
+      onEdit: handleEdit,
+    });
+  }, [handleViewDetail, handleDelete, handleEdit]);
 
   const table = useReactTable({
     data,
@@ -73,6 +75,7 @@ export function DataTable<TData>({
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getRowId: (originalRow) => (originalRow as unknown as Book).id,
     state: {
       sorting,
     },

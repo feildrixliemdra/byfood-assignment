@@ -1,17 +1,10 @@
-import "server-only";
-
-type NextCacheOptions = { revalidate?: number; tags?: string[] };
-
-const baseUrl = process.env.LIBRARY_API_HOST;
+const baseUrl = process.env.NEXT_PUBLIC_LIBRARY_API_HOST;
 
 if (!baseUrl) {
 	throw new Error("Missing environment variable: LIBRARY_API_HOST");
 }
 
-async function requestJson<T>(
-	path: string,
-	init?: RequestInit & { next?: NextCacheOptions },
-): Promise<T> {
+async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 	const url = `${baseUrl}${path}`;
 
 	const response = await fetch(url, {
@@ -58,22 +51,18 @@ async function requestJson<T>(
 }
 
 export const http = {
-	get: <T>(path: string, next?: NextCacheOptions) =>
-		requestJson<T>(path, { method: "GET", next }),
-	post: <T>(path: string, body?: unknown, next?: NextCacheOptions) =>
+	get: <T>(path: string) => requestJson<T>(path, { method: "GET" }),
+	post: <T>(path: string, body?: unknown) =>
 		requestJson<T>(path, {
 			method: "POST",
 			body: body ? JSON.stringify(body) : undefined,
-			next,
 		}),
-	put: <T>(path: string, body?: unknown, next?: NextCacheOptions) =>
+	put: <T>(path: string, body?: unknown) =>
 		requestJson<T>(path, {
 			method: "PUT",
 			body: body ? JSON.stringify(body) : undefined,
-			next,
 		}),
-	delete: <T>(path: string, next?: NextCacheOptions) =>
-		requestJson<T>(path, { method: "DELETE", next }),
+	delete: <T>(path: string) => requestJson<T>(path, { method: "DELETE" }),
 };
 
 export type ApiResponse<TData = unknown> = {

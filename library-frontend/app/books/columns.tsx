@@ -14,18 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "../../components/ui/badge";
 
-export type Book = {
-  id: string;
-  isbn: string;
-  title: string;
-  author: string;
-  publisher: string;
-  year_of_publication: number;
-  category: string;
-  image_url: string;
-  created_at: string;
-  updated_at: string;
-};
+import type { BookResponse } from "@/lib/repos/books.types";
+
+export type Book = BookResponse;
 
 interface ColumnsProps {
   onViewDetail: (book: Book) => void;

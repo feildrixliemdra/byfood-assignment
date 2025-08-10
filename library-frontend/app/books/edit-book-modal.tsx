@@ -33,8 +33,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BOOK_CATEGORIES } from "@/lib/constants";
+import { useUpdateBook } from "@/lib/query/book-mutations";
 import AsteriskLabel from "../../components/asterisk-label";
-import { updateBookAction } from "./actions";
 import type { Book } from "./columns";
 
 function normalizeCategoryValue(category: string | undefined | null): string {
@@ -175,6 +175,8 @@ export function EditBookModal({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const { mutateAsync: updateBookAsync } = useUpdateBook();
+
   const onSubmit = async (data: EditBookFormData) => {
     if (!book) return;
     setIsSubmitting(true);
@@ -197,16 +199,19 @@ export function EditBookModal({
         image_file: undefined, // Remove file from final data
       };
 
-      await updateBookAction(book.id, {
-        title: finalData.title,
-        author: finalData.author,
-        publisher: finalData.publisher,
-        isbn: finalData.isbn,
-        year_of_publication: finalData.year_of_publication
-          ? parseInt(finalData.year_of_publication, 10)
-          : undefined,
-        category: finalData.category,
-        image_url: finalImageUrl || undefined,
+      await updateBookAsync({
+        id: book.id,
+        payload: {
+          title: finalData.title,
+          author: finalData.author,
+          publisher: finalData.publisher,
+          isbn: finalData.isbn,
+          year_of_publication: finalData.year_of_publication
+            ? parseInt(finalData.year_of_publication, 10)
+            : undefined,
+          category: finalData.category,
+          image_url: finalImageUrl || undefined,
+        },
       });
 
       // Build updated book for optimistic UI

@@ -1,7 +1,9 @@
 "use client";
 
 import { Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,6 +25,7 @@ import {
 } from "@/components/ui/pagination";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { useBooksList, usePrefetchAdjacentBooks } from "@/lib/query/books";
 import type { Book } from "./columns";
 import { CreateBookModal } from "./create-book-modal";
 import { DataTable } from "./data-table";
@@ -62,29 +65,69 @@ export default function BooksPageClient({
   books,
   pagination,
 }: BooksPageClientProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [rows, setRows] = useState<Book[]>(books);
-  const [pageState, setPageState] = useState(pagination);
+  const searchParams = useSearchParams();
+  const currentPage = useMemo(
+    () => Number(searchParams.get("page") ?? pagination.page ?? 1),
+    [searchParams, pagination.page]
+  );
+  const currentLimit = useMemo(
+    () => Number(searchParams.get("limit") ?? pagination.limit ?? 10),
+    [searchParams, pagination.limit]
+  );
+  const currentTitle = useMemo(
+    () => searchParams.get("title") ?? undefined,
+    [searchParams]
+  );
+  useEffect(() => {
+    setSearchQuery(currentTitle ?? "");
+  }, [currentTitle]);
 
-  const handleCreateSuccess = (created: Book) => {
-    setRows((prev) => [created, ...prev]);
-    setPageState((prev) => ({ ...prev, total_item: prev.total_item + 1 }));
-  };
+  const { data: listData } = useBooksList(
+    currentPage,
+    currentLimit,
+    currentTitle
+  );
+  const prefetch = usePrefetchAdjacentBooks(
+    currentPage,
+    currentLimit,
+    currentTitle
+  );
+  const serverRows = listData?.data?.books ?? books;
+  const effectivePagination = listData?.data?.pagination ?? pagination;
 
-  const handleUpdateOptimistic = (updated: Book) => {
-    setRows((prev) =>
-      prev.map((b) => (b.id === updated.id ? { ...b, ...updated } : b))
-    );
-  };
+  const handleCreateSuccess = useCallback((_created: Book) => {
+    // Let React Query handle the cache update through invalidation
+  }, []);
 
-  const handleDeleteOptimistic = (id: string) => {
-    setRows((prev) => prev.filter((b) => b.id !== id));
-    setPageState((prev) => ({
-      ...prev,
-      total_item: Math.max(0, prev.total_item - 1),
-    }));
-  };
+  const handleUpdateOptimistic = useCallback((_updated: Book) => {
+    // Let React Query mutations handle optimistic updates
+  }, []);
+
+  const handleDeleteOptimistic = useCallback((_id: string) => {
+    // Let React Query mutations handle optimistic updates
+  }, []);
+
+  const handleSearch = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (debouncedSearchQuery.trim()) {
+      params.set("title", debouncedSearchQuery.trim());
+    } else {
+      params.delete("title");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  }, [debouncedSearchQuery, router]);
+
+  // Auto-search when debounced query changes
+  useEffect(() => {
+    if (debouncedSearchQuery !== (currentTitle ?? "")) {
+      handleSearch();
+    }
+  }, [debouncedSearchQuery, currentTitle, handleSearch]);
 
   return (
     <SidebarInset>
@@ -116,7 +159,9 @@ export default function BooksPageClient({
               <h3 className="font-medium text-sm text-muted-foreground">
                 Total Books
               </h3>
-              <p className="text-2xl font-bold">{pagination.total_item}</p>
+              <p className="text-2xl font-bold">
+                {effectivePagination.total_item}
+              </p>
             </div>
           </div>
 
@@ -127,6 +172,11 @@ export default function BooksPageClient({
                 placeholder="Search books..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
                 className="pl-10"
               />
             </div>
@@ -143,7 +193,7 @@ export default function BooksPageClient({
 
         <div className="flex-1">
           <DataTable
-            data={rows}
+            data={serverRows}
             onUpdate={handleUpdateOptimistic}
             onDelete={handleDeleteOptimistic}
           />
@@ -152,55 +202,60 @@ export default function BooksPageClient({
         <div className="flex flex-col sm:flex-row gap-4 justify-end items-center">
           <UIPagination>
             <PaginationContent>
-              <PaginationItem>
+              <PaginationItem onMouseEnter={prefetch}>
                 <PaginationPrevious
-                  aria-disabled={pageState.page <= 1}
+                  aria-disabled={effectivePagination.page <= 1}
                   className={
-                    pageState.page <= 1
+                    effectivePagination.page <= 1
                       ? "pointer-events-none opacity-50"
                       : undefined
                   }
-                  href={`?page=${Math.max(1, pageState.page - 1)}&limit=${
-                    pageState.limit
-                  }`}
+                  href={`?page=${Math.max(
+                    1,
+                    effectivePagination.page - 1
+                  )}&limit=${effectivePagination.limit}`}
                 />
               </PaginationItem>
 
-              {computePageItems(pageState.page, pageState.total_page).map(
-                (item) => (
-                  <PaginationItem
-                    key={
-                      item === "ellipsis"
-                        ? `ellipsis-${Math.random().toString(36).slice(2, 8)}`
-                        : `page-${item}`
-                    }
-                  >
-                    {item === "ellipsis" ? (
-                      <PaginationEllipsis />
-                    ) : (
-                      <PaginationLink
-                        href={`?page=${item}&limit=${pageState.limit}`}
-                        isActive={item === pageState.page}
-                      >
-                        {item}
-                      </PaginationLink>
-                    )}
-                  </PaginationItem>
-                )
-              )}
+              {computePageItems(
+                effectivePagination.page,
+                effectivePagination.total_page
+              ).map((item) => (
+                <PaginationItem
+                  onMouseEnter={prefetch}
+                  key={
+                    item === "ellipsis"
+                      ? `ellipsis-${Math.random().toString(36).slice(2, 8)}`
+                      : `page-${item}`
+                  }
+                >
+                  {item === "ellipsis" ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href={`?page=${item}&limit=${effectivePagination.limit}`}
+                      isActive={item === effectivePagination.page}
+                    >
+                      {item}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
 
-              <PaginationItem>
+              <PaginationItem onMouseEnter={prefetch}>
                 <PaginationNext
-                  aria-disabled={pageState.page >= pageState.total_page}
+                  aria-disabled={
+                    effectivePagination.page >= effectivePagination.total_page
+                  }
                   className={
-                    pageState.page >= pageState.total_page
+                    effectivePagination.page >= effectivePagination.total_page
                       ? "pointer-events-none opacity-50"
                       : undefined
                   }
                   href={`?page=${Math.min(
-                    pageState.total_page,
-                    pageState.page + 1
-                  )}&limit=${pageState.limit}`}
+                    effectivePagination.total_page,
+                    effectivePagination.page + 1
+                  )}&limit=${effectivePagination.limit}`}
                 />
               </PaginationItem>
             </PaginationContent>
