@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 import {
   Breadcrumb,
@@ -10,6 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -23,6 +24,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import type { Book } from "./columns";
+import { CreateBookModal } from "./create-book-modal";
 import { DataTable } from "./data-table";
 
 // Mock data based on the API structure
@@ -159,6 +161,12 @@ const mockPagination = {
 
 export default function BooksPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+
+  const handleCreateSuccess = () => {
+    // Force page refresh/re-render
+    window.location.reload();
+  };
 
   return (
     <SidebarInset>
@@ -208,6 +216,15 @@ export default function BooksPage() {
                 className="pl-10"
               />
             </div>
+
+            {/* Create Book Button */}
+            <Button
+              className="cursor-pointer"
+              onClick={() => setCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Create Book
+            </Button>
           </div>
         </div>
 
@@ -248,6 +265,13 @@ export default function BooksPage() {
             </PaginationContent>
           </Pagination>
         </div>
+
+        {/* Create Book Modal */}
+        <CreateBookModal
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+          onSuccess={handleCreateSuccess}
+        />
       </div>
     </SidebarInset>
   );
