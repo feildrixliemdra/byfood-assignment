@@ -20,22 +20,44 @@ import {
 } from "@/components/ui/table";
 import { BookDetailModal } from "./book-detail-modal";
 import { type Book, createColumns } from "./columns";
+import { DeleteBookModal } from "./delete-book-modal";
 
 interface DataTableProps<TData> {
   data: TData[];
+  onDataChange?: () => void;
 }
 
-export function DataTable<TData>({ data }: DataTableProps<TData>) {
+export function DataTable<TData>({
+  data,
+  onDataChange,
+}: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
 
   const handleViewDetail = (book: Book) => {
     setSelectedBook(book);
     setModalOpen(true);
   };
 
-  const columns = createColumns({ onViewDetail: handleViewDetail });
+  const handleDelete = (book: Book) => {
+    setBookToDelete(book);
+    setDeleteModalOpen(true);
+  };
+
+  const handleBookDeleted = () => {
+    // Refresh the data if callback is provided
+    if (onDataChange) {
+      onDataChange();
+    }
+  };
+
+  const columns = createColumns({
+    onViewDetail: handleViewDetail,
+    onDelete: handleDelete,
+  });
 
   const table = useReactTable({
     data,
@@ -97,6 +119,13 @@ export function DataTable<TData>({ data }: DataTableProps<TData>) {
         book={selectedBook}
         open={modalOpen}
         onOpenChange={setModalOpen}
+      />
+
+      <DeleteBookModal
+        book={bookToDelete}
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        onBookDeleted={handleBookDeleted}
       />
     </div>
   );

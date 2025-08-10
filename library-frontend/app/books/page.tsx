@@ -168,6 +168,11 @@ export default function BooksPage() {
     window.location.reload();
   };
 
+  const handleDataChange = () => {
+    // Force page refresh/re-render when data changes
+    window.location.reload();
+  };
+
   return (
     <SidebarInset>
       <header className="flex h-16 shrink-0 items-center gap-2 px-4">
@@ -230,7 +235,7 @@ export default function BooksPage() {
 
         {/* Content */}
         <div className="flex-1">
-          <DataTable data={mockBooks} />
+          <DataTable data={mockBooks} onDataChange={handleDataChange} />
         </div>
 
         {/* Pagination */}
