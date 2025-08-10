@@ -54,5 +54,7 @@ func NewRouter(hndler *handler.Handler) *fiber.App {
 //	@Success        200                {string}    string
 //	@Router            / [get]
 func GetHello(c *fiber.Ctx) error {
-	return c.SendString("Hello, World!")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Library Management API is running",
+	})
 }
