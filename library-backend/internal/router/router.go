@@ -51,7 +51,7 @@ func NewRouter(hndler *handler.Handler) *fiber.App {
 //	@Tags            Hello
 //	@Accept            json
 //	@Produce        json
-//	@Success        200                {string}    string
+//	@Success        200                {object}    map[string]string
 //	@Router            / [get]
 func GetHello(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

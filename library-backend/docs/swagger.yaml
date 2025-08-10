@@ -168,7 +168,9 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
       summary: Getting Hello
       tags:
       - Hello
