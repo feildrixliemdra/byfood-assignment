@@ -4,8 +4,8 @@ import {
   BarChart3,
   BookAIcon,
   BookOpen,
-  Database,
   FileText,
+  LibraryBig,
   Plus,
   Search,
   Settings,
@@ -146,13 +146,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
+              <Link href="/books">
                 <div className="bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <BookAIcon className="size-4" />
+                  <LibraryBig className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">
-                    Library Management Dashboard
+                  <span className="font-semibold text-xl">
+                    Library Dashboard
                   </span>
                 </div>
               </Link>
@@ -166,11 +166,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {data.navMain.map((item) => {
               return (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="font-medium">
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      {item.title}
-                    </Link>
+                  <SidebarMenuButton className="font-medium cursor-default hover:bg-transparent">
+                    <item.icon className="size-4" />
+                    {item.title}
                   </SidebarMenuButton>
                   {item.items?.length ? (
                     <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
