@@ -39,6 +39,9 @@ func (s *bookService) CreateBook(ctx context.Context, request payload.CreateBook
 
 	err = s.bookRepo.CreateBook(ctx, book)
 	if err != nil {
+		if strings.Contains(err.Error(), "ERROR: duplicate key value violates unique constraint \"books_isbn_key\"") {
+			return res, errorcustom.ErrBookAlreadyExists
+		}
 		slog.ErrorContext(ctx, "[BookService][CreateBook] failed to create book", "error", err)
 		return res, err
 	}

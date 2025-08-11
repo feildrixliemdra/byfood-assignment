@@ -13,7 +13,7 @@ type CreateBookRequest struct {
 	Author            string `json:"author" validate:"required"`
 	Publisher         string `json:"publisher" validate:"required"`
 	YearOfPublication int    `json:"year_of_publication" validate:"required,min=1800,max=2050"`
-	Category          string `json:"category" validate:"required"`
+	Category          string `json:"category" validate:"required,oneof=programming novel fantasy romance mystery horror science-fiction other"`
 	ImageURL          string `json:"image_url,omitempty" validate:"omitempty,url"`
 }
 
@@ -59,8 +59,8 @@ type UpdateBookRequest struct {
 	Title             *string `json:"title,omitempty" validate:"omitempty,min=3,max=150"`
 	Author            *string `json:"author,omitempty"`
 	Publisher         *string `json:"publisher,omitempty"`
-	YearOfPublication *int    `json:"year_of_publication,omitempty"`
-	Category          *string `json:"category,omitempty"`
+	YearOfPublication *int    `json:"year_of_publication,omitempty" validate:"omitempty,min=1800,max=2050"`
+	Category          *string `json:"category,omitempty" validate:"omitempty,oneof=programming novel fantasy romance mystery horror science-fiction other"`
 	ImageURL          *string `json:"image_url,omitempty" validate:"omitempty,url"`
 }
 

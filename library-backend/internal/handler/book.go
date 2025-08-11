@@ -53,6 +53,9 @@ func (h *bookHandler) CreateBook(c *fiber.Ctx) error {
 
 	res, err := h.bookService.CreateBook(c.Context(), request)
 	if err != nil {
+		if errors.Is(err, errorcustom.ErrBookAlreadyExists) {
+			return util.ErrBadRequestResponse(c, err.Error())
+		}
 		return util.ErrInternalResponse(c)
 	}
 

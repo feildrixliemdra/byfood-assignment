@@ -2,7 +2,6 @@ package util
 
 import (
 	"errors"
-	"fmt"
 	"library-backend/internal/payload"
 
 	val "library-backend/internal/validator"
@@ -25,7 +24,6 @@ func ErrBindResponse(c *fiber.Ctx, err error) error {
 	var validationErrors validator.ValidationErrors
 
 	if errors.As(err, &validationErrors) {
-		fmt.Println("validationErrors", val.TranslateErrorValidator(err))
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(payload.Response{
 			Success: false,
 			Message: "Validation failed",
@@ -46,6 +44,13 @@ func ErrInternalResponse(c *fiber.Ctx) error {
 			Message: "Internal server error",
 		},
 	)
+}
+
+func ErrBadRequestResponse(c *fiber.Ctx, err string) error {
+	return c.Status(fiber.StatusBadRequest).JSON(payload.Response{
+		Success: false,
+		Message: err,
+	})
 }
 
 func ErrNotFoundResponse(c *fiber.Ctx) error {
