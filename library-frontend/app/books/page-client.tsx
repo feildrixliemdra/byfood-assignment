@@ -23,6 +23,13 @@ import {
   PaginationPrevious,
   Pagination as UIPagination,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -125,6 +132,13 @@ export default function BooksPageClient({
     router.push(`?${params.toString()}`);
   }, [debouncedSearchQuery, router]);
 
+  const handleLimitChange = useCallback((newLimit: string) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("limit", newLimit);
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  }, [router]);
+
   // Auto-search when debounced query changes
   useEffect(() => {
     if (debouncedSearchQuery !== (currentTitle ?? "")) {
@@ -179,19 +193,39 @@ export default function BooksPageClient({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search books..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
-                className="pl-10"
-              />
+            <div className="flex flex-col sm:flex-row gap-4 flex-1 sm:items-end">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search books..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Items per page
+                </span>
+                <Select
+                  value={currentLimit.toString()}
+                  onValueChange={handleLimitChange}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <Button
@@ -241,7 +275,7 @@ export default function BooksPageClient({
                   href={`?page=${Math.max(
                     1,
                     effectivePagination.page - 1
-                  )}&limit=${effectivePagination.limit}`}
+                  )}&limit=${effectivePagination.limit}${currentTitle ? `&title=${encodeURIComponent(currentTitle)}` : ""}`}
                 />
               </PaginationItem>
 
@@ -261,7 +295,7 @@ export default function BooksPageClient({
                     <PaginationEllipsis />
                   ) : (
                     <PaginationLink
-                      href={`?page=${item}&limit=${effectivePagination.limit}`}
+                      href={`?page=${item}&limit=${effectivePagination.limit}${currentTitle ? `&title=${encodeURIComponent(currentTitle)}` : ""}`}
                       isActive={item === effectivePagination.page}
                     >
                       {item}
@@ -283,7 +317,7 @@ export default function BooksPageClient({
                   href={`?page=${Math.min(
                     effectivePagination.total_page,
                     effectivePagination.page + 1
-                  )}&limit=${effectivePagination.limit}`}
+                  )}&limit=${effectivePagination.limit}${currentTitle ? `&title=${encodeURIComponent(currentTitle)}` : ""}`}
                 />
               </PaginationItem>
             </PaginationContent>
