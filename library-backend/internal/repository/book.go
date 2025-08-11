@@ -39,8 +39,9 @@ func (r *bookRepository) CreateBook(ctx context.Context, book model.Book) error 
 			"year_of_publication",
 			"category",
 			"image_url",
+			"updated_at",
 		).
-		Values(book.ID, book.ISBN, book.Title, book.Author, book.Publisher, book.YearOfPublication, book.Category, book.ImageURL).
+		Values(book.ID, book.ISBN, book.Title, book.Author, book.Publisher, book.YearOfPublication, book.Category, book.ImageURL, "NOW()").
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := q.ToSql()
