@@ -41,7 +41,6 @@ WORKDIR $PROJECT_DIR
 
 # Copy the binary
 COPY --from=builder $BUILDDIR/url-cleanup-backend url-cleanup-backend
-COPY --from=builder $BUILDDIR/migration migration
 
 EXPOSE 8080
 
