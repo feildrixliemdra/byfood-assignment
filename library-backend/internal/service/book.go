@@ -31,6 +31,12 @@ func NewBookService(bookRepo repository.BookRepository) BookService {
 func (s *bookService) CreateBook(ctx context.Context, request payload.CreateBookRequest) (res payload.CreateBookResponse, err error) {
 	book := request.ToModel()
 
+	// if image URL is empty, set it to the default image URL
+	if book.ImageURL == "" {
+		// FIXME: change strategy instead of hardcoding the url for default image
+		book.ImageURL = "https://ik.imagekit.io/tten6kleuk/book-covers/empty-book-cover.jpg"
+	}
+
 	err = s.bookRepo.CreateBook(ctx, book)
 	if err != nil {
 		slog.ErrorContext(ctx, "[BookService][CreateBook] failed to create book", "error", err)
