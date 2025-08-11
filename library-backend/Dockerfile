@@ -41,6 +41,7 @@ WORKDIR $PROJECT_DIR
 
 # Copy the binary
 COPY --from=builder $BUILDDIR/library-backend library-backend
+COPY --from=builder $BUILDDIR/migration migration
 
 EXPOSE 8080
 
