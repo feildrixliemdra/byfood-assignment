@@ -1,19 +1,6 @@
 "use client";
 
-import {
-  BarChart3,
-  BookAIcon,
-  BookOpen,
-  FileText,
-  LibraryBig,
-  Plus,
-  Search,
-  Settings,
-  Shield,
-  TrendingUp,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { BookAIcon, BookOpen, LibraryBig } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type * as React from "react";
