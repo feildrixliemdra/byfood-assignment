@@ -43,7 +43,6 @@ WORKDIR $PROJECT_DIR
 
 # Copy the binary
 COPY --from=builder $BUILDDIR/library-backend library-backend
-COPY --from=builder $BUILDDIR/.env .env
 
 EXPOSE 8080
 
