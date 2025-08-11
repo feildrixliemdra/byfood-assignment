@@ -26,3 +26,8 @@ test-coverage:
 
 test-coverage-html: test-coverage
 	go tool cover -html=coverage.out -o coverage.html
+
+# create new sql db migration file in database/migration
+# example usage: make new-db-migration name="create_user_table"
+new-db-migration:
+	go run main.go db:migrate create $(name) sql
