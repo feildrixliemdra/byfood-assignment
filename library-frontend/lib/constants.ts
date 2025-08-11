@@ -23,7 +23,10 @@ const CATEGORY_MAP = new Map(
  * @returns The formatted display name (e.g., "Programming")
  */
 export function formatCategoryName(categoryKey: string): string {
-	return CATEGORY_MAP.get(categoryKey) || categoryKey
+	const mapped = CATEGORY_MAP.get(categoryKey as string);
+	if (mapped) return mapped;
+	
+	return categoryKey
 		.split('-')
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 		.join(' ');

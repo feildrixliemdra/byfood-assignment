@@ -34,11 +34,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useImageKitUpload } from "@/hooks/use-imagekit-upload";
 import { BOOK_CATEGORIES } from "@/lib/constants";
 import type { ApiResponse } from "@/lib/http";
 import { useCreateBook } from "@/lib/query/book-mutations";
 import type { CreateBookResponse } from "@/lib/repos/books.types";
-import { useImageKitUpload } from "@/hooks/use-imagekit-upload";
 import AsteriskLabel from "../../components/asterisk-label";
 import type { Book } from "./columns";
 
@@ -56,7 +56,9 @@ export function CreateBookModal({
   onSuccess,
 }: CreateBookModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Only support file upload for cover image in create modal
+  // Track uploaded image URL to prevent re-uploads
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   const form = useForm<CreateBookFormData>({
     resolver: zodResolver(bookFormSchema),
@@ -73,26 +75,50 @@ export function CreateBookModal({
   });
 
   const { mutateAsync: createBookAsync } = useCreateBook();
-  const { upload: uploadToImageKit, uploading: imageUploading, uploadProgress, error: uploadError } = useImageKitUpload();
+  const {
+    upload: uploadToImageKit,
+    uploading: imageUploading,
+    uploadProgress,
+    error: uploadError,
+  } = useImageKitUpload();
 
   const onSubmit = async (data: CreateBookFormData) => {
     setIsSubmitting(true);
 
     try {
-      // Upload image to ImageKit if file is provided
+      // Upload image to ImageKit if file is provided and not already uploaded
       let finalImageUrl = data.image_url || "";
 
       if (data.image_file) {
-        try {
-          const uploadResult = await uploadToImageKit({
-            file: data.image_file,
-            fileName: `book-cover-${Date.now()}-${data.image_file.name}`,
-            folder: "/book-covers",
-            tags: ["book", "cover", data.category.toLowerCase()],
-          });
-          finalImageUrl = uploadResult.url;
-        } catch (uploadErr) {
-          throw new Error(`Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}`);
+        // Check if we already uploaded this exact file
+        const currentFileName = data.image_file.name;
+
+        if (uploadedImageUrl && uploadedFileName === currentFileName) {
+          // Reuse the already uploaded image URL
+          finalImageUrl = uploadedImageUrl;
+          console.log("Reusing already uploaded image:", finalImageUrl);
+        } else {
+          // Upload new image or different image
+          try {
+            const uploadResult = await uploadToImageKit({
+              file: data.image_file,
+              fileName: `book-cover-${Date.now()}-${data.image_file.name}`,
+              folder: "/book-covers",
+              tags: ["book", "cover", data.category.toLowerCase()],
+            });
+            finalImageUrl = uploadResult.url;
+
+            // Store the uploaded image info for future reuse
+            setUploadedImageUrl(finalImageUrl);
+            setUploadedFileName(currentFileName);
+            console.log("New image uploaded:", finalImageUrl);
+          } catch (uploadErr) {
+            throw new Error(
+              `Image upload failed: ${
+                uploadErr instanceof Error ? uploadErr.message : "Unknown error"
+              }`
+            );
+          }
         }
       }
 
@@ -137,6 +163,9 @@ export function CreateBookModal({
       });
 
       form.reset();
+      // Reset upload tracking on successful creation
+      setUploadedImageUrl(null);
+      setUploadedFileName(null);
       onOpenChange(false);
       onSuccess(createdBook);
     } catch (error) {
@@ -149,7 +178,20 @@ export function CreateBookModal({
   const handleClose = () => {
     if (!isSubmitting) {
       form.reset();
+      // Reset upload tracking on modal close
+      setUploadedImageUrl(null);
+      setUploadedFileName(null);
       onOpenChange(false);
+    }
+  };
+
+  // Track when user changes the file to clear uploaded state if needed
+  const handleFileChange = (file: File | null) => {
+    if (file && uploadedFileName && file.name !== uploadedFileName) {
+      // User selected a different file, clear uploaded state
+      setUploadedImageUrl(null);
+      setUploadedFileName(null);
+      console.log("File changed, clearing upload cache");
     }
   };
 
@@ -304,6 +346,7 @@ export function CreateBookModal({
                       <FileUpload
                         onFileChange={(file) => {
                           field.onChange(file);
+                          handleFileChange(file);
                           if (file) {
                             form.setValue("image_url", "");
                           }
@@ -320,7 +363,8 @@ export function CreateBookModal({
                       </div>
                     )}
                     {imageUploading && uploadProgress > 0 && (
-                      <div className="text-xs text-muted-foreground mt-1">
+                      <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                        <Upload className="h-3.5 w-3.5 animate-pulse" />
                         Uploading: {uploadProgress}%
                       </div>
                     )}
@@ -351,7 +395,11 @@ export function CreateBookModal({
                 {(isSubmitting || imageUploading) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                {imageUploading ? "Uploading Image..." : isSubmitting ? "Creating..." : "Create Book"}
+                {imageUploading
+                  ? "Uploading Image..."
+                  : isSubmitting
+                  ? "Creating..."
+                  : "Create Book"}
               </Button>
             </div>
           </form>

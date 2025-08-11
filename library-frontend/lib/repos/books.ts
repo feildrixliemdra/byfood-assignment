@@ -73,6 +73,14 @@ class HttpBookRepository implements BookRepository {
 
 export const bookRepo: BookRepository = new HttpBookRepository();
 
+export type {
+	BookResponse,
+	CreateBookRequest,
+	CreateBookResponse,
+	GetBooksResponse,
+	UpdateBookRequest,
+} from "./books.types";
+
 // React Query keys
 export const booksQueryKey = (page: number, limit: number, title?: string) =>
 	["books", { page, limit, title: title ?? "" }] as const;

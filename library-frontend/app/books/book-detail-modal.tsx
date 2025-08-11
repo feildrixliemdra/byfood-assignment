@@ -58,7 +58,7 @@ export function BookDetailModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1">
               <Image
-                src={book.image_url}
+                src={book.image_url || "/placeholder-book.png"}
                 alt={book.title}
                 width={300}
                 height={400}
@@ -143,7 +143,7 @@ export function BookDetailModal({
                   <p className="text-sm font-medium text-muted-foreground">
                     Created At
                   </p>
-                  <p className="text-sm font-medium text-foreground">{formatDate(book.created_at)}</p>
+                  <p className="text-sm font-medium text-foreground">{formatDate(book.created_at || new Date().toISOString())}</p>
                 </div>
               </div>
 
@@ -153,7 +153,7 @@ export function BookDetailModal({
                   <p className="text-sm font-medium text-muted-foreground">
                     Last Updated
                   </p>
-                  <p className="text-sm font-medium text-foreground">{formatDate(book.updated_at)}</p>
+                  <p className="text-sm font-medium text-foreground">{formatDate(book.updated_at || new Date().toISOString())}</p>
                 </div>
               </div>
             </div>
