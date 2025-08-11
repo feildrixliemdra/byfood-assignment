@@ -13,8 +13,9 @@ export const BOOK_CATEGORIES = [
 export type BookCategory = (typeof BOOK_CATEGORIES)[number]["value"];
 
 // Create a mapping for quick lookups from category key to display name
-const CATEGORY_MAP = new Map(
-	BOOK_CATEGORIES.map(category => [category.value, category.label])
+// Widen the key type to string to allow lookups with arbitrary API strings
+const CATEGORY_MAP: ReadonlyMap<string, string> = new Map<string, string>(
+	BOOK_CATEGORIES.map((category) => [category.value, category.label]),
 );
 
 /**
@@ -23,11 +24,11 @@ const CATEGORY_MAP = new Map(
  * @returns The formatted display name (e.g., "Programming")
  */
 export function formatCategoryName(categoryKey: string): string {
-	const mapped = CATEGORY_MAP.get(categoryKey as string);
+	const mapped = CATEGORY_MAP.get(categoryKey);
 	if (mapped) return mapped;
-	
+
 	return categoryKey
-		.split('-')
-		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
+		.split("-")
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(" ");
 }
