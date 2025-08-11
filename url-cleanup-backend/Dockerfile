@@ -7,10 +7,10 @@ RUN apk update && apk --no-cache add  build-base  git bash  coreutils openssh  o
 
 
 # Create the directory where the application will reside
-RUN mkdir -p /go/src/github.com/feildrixliemdra/library-backend
+RUN mkdir -p /go/src/github.com/feildrixliemdra/url-cleanup-backend
 
 
-WORKDIR /go/src/github.com/feildrixliemdra/library-backend
+WORKDIR /go/src/github.com/feildrixliemdra/url-cleanup-backend
 
 COPY . .
 
@@ -19,7 +19,7 @@ RUN go install -v github.com/swaggo/swag/cmd/swag@v1.7.8 && \
     swag init -g internal/router/router.go && \
     go mod download && \
     go mod tidy && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o library-backend .
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o url-cleanup-backend .
 
 # STEP 2 build a small image
 # Set up the final (deployable/runtime) image.
@@ -29,8 +29,8 @@ FROM alpine:3.10.2
 # setup package dependencies
 RUN apk --no-cache update && apk --no-cache  add  ca-certificates bash jq curl
 
-ENV BUILDDIR=/go/src/github.com/feildrixliemdra/library-backend
-ENV PROJECT_DIR=/opt/library-backend
+ENV BUILDDIR=/go/src/github.com/feildrixliemdra/url-cleanup-backend
+ENV PROJECT_DIR=/opt/url-cleanup-backend
 
 # Setting timezone
 ENV TZ=Asia/Jakarta
@@ -40,8 +40,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 WORKDIR $PROJECT_DIR
 
 # Copy the binary
-COPY --from=builder $BUILDDIR/library-backend library-backend
+COPY --from=builder $BUILDDIR/url-cleanup-backend url-cleanup-backend
 
 EXPOSE 8080
 
-CMD ["sh","-c", "/opt/library-backend/library-backend"]
+CMD ["sh","-c", "/opt/url-cleanup-backend/url-cleanup-backend"]
