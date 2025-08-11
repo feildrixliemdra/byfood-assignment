@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { formatCategoryName } from "@/lib/constants";
 import type { Book } from "./columns";
 
 interface BookDetailModalProps {
@@ -70,57 +71,57 @@ export function BookDetailModal({
                 <h3 className="text-lg font-semibold mb-3">Book Information</h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-muted-foreground" />
+                    <User className="h-5 w-5 text-primary/70" />
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Author
                       </p>
-                      <p className="font-medium">{book.author}</p>
+                      <p className="font-semibold text-foreground">{book.author}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Building2 className="h-5 w-5 text-muted-foreground" />
+                    <Building2 className="h-5 w-5 text-primary/70" />
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Publisher
                       </p>
-                      <p className="font-medium">{book.publisher}</p>
+                      <p className="font-semibold text-foreground">{book.publisher}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <CalendarDays className="h-5 w-5 text-muted-foreground" />
+                    <CalendarDays className="h-5 w-5 text-primary/70" />
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Year of Publication
                       </p>
-                      <p className="font-medium">{book.year_of_publication}</p>
+                      <p className="font-semibold text-foreground">{book.year_of_publication}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <BookOpen className="h-5 w-5 text-muted-foreground" />
+                    <BookOpen className="h-5 w-5 text-primary/70" />
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         Category
                       </p>
                       <Badge
                         variant="default"
-                        className="bg-primary/15 text-primary font-medium px-2 py-1"
+                        className="bg-primary/15 text-primary font-semibold px-3 py-1"
                       >
-                        {book.category}
+                        {formatCategoryName(book.category)}
                       </Badge>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Hash className="h-5 w-5 text-muted-foreground" />
+                    <Hash className="h-5 w-5 text-primary/70" />
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
                         ISBN
                       </p>
-                      <p className="font-mono text-sm bg-muted px-2 py-1 rounded inline-block">
+                      <p className="font-mono text-sm bg-muted/50 text-foreground px-2 py-1 rounded inline-block font-medium">
                         {book.isbn}
                       </p>
                     </div>
@@ -134,25 +135,25 @@ export function BookDetailModal({
 
           {/* System Information */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">System Information</h3>
+            <h3 className="text-lg font-semibold mb-3 text-foreground">System Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-muted-foreground" />
+                <Clock className="h-5 w-5 text-primary/70" />
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
                     Created At
                   </p>
-                  <p className="text-sm">{formatDate(book.created_at)}</p>
+                  <p className="text-sm font-medium text-foreground">{formatDate(book.created_at)}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-muted-foreground" />
+                <Clock className="h-5 w-5 text-primary/70" />
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
                     Last Updated
                   </p>
-                  <p className="text-sm">{formatDate(book.updated_at)}</p>
+                  <p className="text-sm font-medium text-foreground">{formatDate(book.updated_at)}</p>
                 </div>
               </div>
             </div>
@@ -161,7 +162,7 @@ export function BookDetailModal({
               <p className="text-sm font-medium text-muted-foreground">
                 Book ID
               </p>
-              <p className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block mt-1">
+              <p className="font-mono text-xs bg-muted/50 text-foreground px-2 py-1 rounded inline-block mt-1 font-medium">
                 {book.id}
               </p>
             </div>

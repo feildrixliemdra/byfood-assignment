@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "../../components/ui/badge";
+import { formatCategoryName } from "@/lib/constants";
 
 import type { BookResponse } from "@/lib/repos/books.types";
 
@@ -71,7 +72,7 @@ export const createColumns = ({
         variant="default"
         className="inline-flex items-center  bg-primary/15 text-primary font-medium px-2 py-1 text-xs"
       >
-        {row.getValue("category")}
+        {formatCategoryName(row.getValue("category"))}
       </Badge>
     ),
   },

@@ -213,12 +213,9 @@ export function EditBookModal({
 
       onOpenChange(false);
       onSuccess(updatedBook);
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error("Failed to update book", {
-        description: errorMessage,
-      });
+    } catch {
+      // Error is already handled by the mutation's onError callback
+      // which will show appropriate validation messages via showErrorToast
     } finally {
       setIsSubmitting(false);
     }
