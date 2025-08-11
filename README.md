@@ -23,6 +23,12 @@ byfood-assignment/
 - Next.js 15, React 19, TypeScript, Tailwind CSS v4, shadcn/ui, TanStack Query/Table
 - Clean architecture, interface-first design, DI, unit tests with mocks
 
+## Live Apps
+
+- Library Backend: [Swagger](https://library-backend-utm48.ondigitalocean.app/swagger/index.html)
+- Library Frontend: [Dashboard](https://byfood-assignment.vercel.app/books)
+- URL Cleanup Backend: [Swagger](https://url-cleanup-sg3s9.ondigitalocean.app/swagger/index.html)
+
 ## Prerequisites
 
 - Go 1.23+
