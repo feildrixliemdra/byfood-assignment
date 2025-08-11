@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"log"
+	"log/slog"
 	"url-cleanup-backend/internal/config"
 
 	"github.com/spf13/viper"
@@ -9,17 +9,17 @@ import (
 
 func NewConfig() *config.Config {
 	viper.SetConfigType("env")
-	viper.SetConfigFile(".env")
+	viper.SetConfigName(".env")
 	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file: %v", err)
+		slog.Warn("Error reading config file: %v", err)
 	}
 
 	var config config.Config
 	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatalf("Unable to decode config: %v", err)
+		slog.Warn("Unable to decode config: %v", err)
 	}
 
 	return &config
